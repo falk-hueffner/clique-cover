@@ -28,36 +28,3 @@ let max_cliques g =
   in
     extend IntSet.empty (Graph.vertices g) IntSet.empty []
 ;;
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-    (*
-
-    
-
-let opt_default opt default =
-  match opt with
-    Some x -> x
-  | None -> default
-;;
-    (* Look for nodes that are "candidates" with the
-       most neighbors among the "candidates"  *)
-    let best, _ =
-      find_max
-	IntSet.fold
-	(fun cand -> IntSet.intersection_size (Graph.neighbors g cand) cands)
-	cands in
-    let best = opt_default best (IntSet.choose cands) in
-    
-*)
