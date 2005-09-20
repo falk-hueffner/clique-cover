@@ -12,5 +12,12 @@ let output_list printer channel l =
       loop l
   end;;
 
+let rec list_find_opt p = function
+    [] -> None
+  | x :: xs ->
+      let r = p x in
+	if r <> None then r else list_find_opt p xs
+;;
+
 let print_list printer l = output_list printer stdout l;;
 let dump_list printer l = output_list printer stderr l;;

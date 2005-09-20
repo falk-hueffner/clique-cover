@@ -90,13 +90,7 @@ let specs = [
          "Print progress to stderr");
 ];;
 
-let () =
-  Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;  
-  let g, vertex_names = read_graph () in
-(*     Graph.dump g; *)
-  let g = if !complement_graph then Graph.complement g else g in
-  let cliques = Branch.ecc_branch g in
-(*   let cliques = KSW.ecc_heuristic g in *)
+let print_cliques cliques vertex_names =
   let cliques = List.map
     (fun c -> (IntSet.fold
 		 (fun cliques i -> (Hashtbl.find vertex_names i) :: cliques)
@@ -115,4 +109,30 @@ let () =
 		   c);
 	 print_newline ())
       cliques
+;;
+
+let is_clique_cover g cliques =
+  let g = List.fold_left Graph.clear_subgraph g cliques in
+    Graph.num_edges g = 0
+;;
+
+let () =
+  Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;  
+  let g, vertex_names = read_graph () in
+  let g = if !complement_graph then Graph.complement g else g in
+    Graph.dump g;
+  let rec loop k =
+    if !Util.verbose then Printf.eprintf "*** k = %d ***\n%!" k;
+    match Branch.ecc_solve g k with
+	None -> loop (k + 1)
+      | Some cliques ->
+	  assert (List.length cliques = k);
+	  if !Util.verbose then Printf.eprintf "Found solution with k = %d cliques\n%!" k;
+	  print_cliques cliques vertex_names;
+	  if not (is_clique_cover g cliques) then begin
+	    Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
+	    exit 1;
+	  end
+  in
+    loop 0
 ;;

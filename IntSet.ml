@@ -23,7 +23,7 @@ let fold f s accu = S.fold (fun i accu -> f accu i) s accu;;
 let iter = S.iter;;
 
 exception Got_it;;
-let find p s =
+let find_opt p s =
   let it = ref None in
   try
     iter (fun i ->
@@ -34,6 +34,12 @@ let find p s =
         end) s;
     None;
   with Got_it -> !it
+;;
+
+let find p s =
+  match find_opt (fun x -> if p x then Some x else None) s with
+      None -> raise Not_found
+    | Some x -> x
 ;;
 
 let output channel s =

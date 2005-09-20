@@ -13,6 +13,7 @@ val vertices : t -> IntSet.t
 val is_connected : t -> int -> int -> bool
 val neighbors : t -> int -> IntSet.t
 val is_clique : t -> bool
+val choose_edge : t -> int * int
 
 val connect : t -> vertex -> vertex -> t
 (** [connect g v w] connects vertices [v] and [w] in [g]. Takes O(log n) time.  *)
@@ -20,7 +21,7 @@ val connect : t -> vertex -> vertex -> t
 val subgraph : t -> IntSet.t -> t
 val clear_subgraph : t -> IntSet.t -> t
 
-val find_edge : (int -> int -> 'a option) -> t -> 'a option
+val find_edge_opt : (int -> int -> 'a option) -> t -> 'a option
 
 val fold_vertices : ('a -> vertex -> IntSet.t -> 'a) -> t -> 'a -> 'a
 val fold_vertices_inorder : ('a -> vertex -> IntSet.t -> 'a) -> t -> 'a -> 'a

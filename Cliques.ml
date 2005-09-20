@@ -3,8 +3,11 @@ let max_cliques g =
      are supersets of CLIQUE, disjoint from NOTS, and subset of CANDS
      union CLIQUE.  *)
   let rec extend clique cands nots cliques =
-    if IntSet.is_empty cands && IntSet.is_empty nots
-    then clique :: cliques
+    if IntSet.is_empty cands
+    then
+      if IntSet.is_empty nots
+      then clique :: cliques
+      else cliques
     else
       let pivot = IntSet.choose cands in
       let rec loop cands nots cliques =

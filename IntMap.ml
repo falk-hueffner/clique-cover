@@ -26,7 +26,7 @@ let fold_inorder f m accu =
 ;;
 
 exception Got_it;;
-let find p m =
+let find_opt p m =
   let it = ref None in
   try
     iter (fun k v ->
@@ -37,4 +37,10 @@ let find p m =
         end) m;
     None;
   with Got_it -> !it
+;;
+
+let find p m =
+  match find_opt (fun k v -> if p k v then Some (k, v) else None) m with
+      None -> raise Not_found
+    | Some x -> x
 ;;

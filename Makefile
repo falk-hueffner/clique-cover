@@ -6,6 +6,7 @@ SOURCES   = \
 	IntSet.ml	\
 	Graph.ml	\
 	Cliques.ml	\
+	ECC.ml		\
 	Branch.ml	\
 	KSW.ml		\
 	Main.ml

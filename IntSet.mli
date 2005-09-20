@@ -19,7 +19,8 @@ val split : t -> int -> t * bool * t
 
 val fold : ('a -> int -> 'a) -> t -> 'a -> 'a
 val iter : (int -> unit) -> t -> unit
-val find : (int -> 'a option) -> t -> 'a option
+val find : (int -> bool) -> t -> int
+val find_opt : (int -> 'a option) -> t -> 'a option
 
 val output : out_channel -> t -> unit
 val print : t -> unit

@@ -7,6 +7,13 @@ let empty = IntMap.empty;;
 let neighbors g i = IntMap.get g i;;
 let neighbors' g i = try neighbors g i with Not_found -> IntSet.empty;;
 
+let choose_edge g =
+  let i, neighbors =
+    IntMap.find (fun _ neighbors -> not (IntSet.is_empty neighbors)) g
+  in
+    i, IntSet.choose neighbors
+;;
+
 let connect g i j =
   assert (i <> j);
   let neighbors_i = neighbors' g i in
@@ -85,10 +92,10 @@ let complement g =
           IntSet.remove (IntSet.minus vertices neighbors) i) g
 ;;
 
-let find_edge p g =
-  IntMap.find
+let find_edge_opt p g =
+  IntMap.find_opt
     (fun i neighbors ->
-      IntSet.find (fun j -> p i j) neighbors)
+      IntSet.find_opt (fun j -> p i j) neighbors)
     g
 ;;
 
