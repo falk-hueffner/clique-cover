@@ -6,19 +6,23 @@ let max_cliques g =
     if IntSet.is_empty cands && IntSet.is_empty nots
     then clique :: cliques
     else
+      let pivot = IntSet.choose cands in
       let rec loop cands nots cliques =
 	if IntSet.is_empty cands
 	then cliques
 	else
 	  let u = IntSet.choose cands in
-	  let cands = IntSet.remove cands u in
-	  let clique' = IntSet.add clique u in
-	  let u_neighbors = Graph.neighbors g u in
-	  let cands' = IntSet.intersection cands u_neighbors in
-	  let nots' = IntSet.intersection nots u_neighbors in
-	  let cliques = extend clique' cands' nots' cliques in
-	  let nots = IntSet.add nots u in
-	  loop cands nots cliques
+	    if Graph.is_connected g u pivot
+	    then cliques
+	    else
+	      let cands = IntSet.remove cands u in
+	      let clique' = IntSet.add clique u in
+	      let u_neighbors = Graph.neighbors g u in
+	      let cands' = IntSet.intersection cands u_neighbors in
+	      let nots' = IntSet.intersection nots u_neighbors in
+	      let cliques = extend clique' cands' nots' cliques in
+	      let nots = IntSet.add nots u in
+		loop cands nots cliques
       in
         loop cands nots cliques
   in
@@ -39,16 +43,6 @@ let max_cliques g =
 
 
     (*
-let find_max folder scorer collection =
-  folder
-    (fun ((best, best_score) as old) candidate ->
-      let score = scorer candidate in
-        if score > best_score
-	then Some candidate, score
-	else old)
-    collection
-    (None, min_int)
-;;
 
     
 
