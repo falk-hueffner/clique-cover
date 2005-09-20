@@ -93,8 +93,10 @@ let specs = [
 let () =
   Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;  
   let g, vertex_names = read_graph () in
+(*     Graph.dump g; *)
   let g = if !complement_graph then Graph.complement g else g in
-  let cliques = KSW.ecc_heuristic g in
+  let cliques = Branch.ecc_branch g in
+(*   let cliques = KSW.ecc_heuristic g in *)
   let cliques = List.map
     (fun c -> (IntSet.fold
 		 (fun cliques i -> (Hashtbl.find vertex_names i) :: cliques)

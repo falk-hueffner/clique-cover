@@ -5,7 +5,10 @@ SOURCES   = \
 	IntMap.ml	\
 	IntSet.ml	\
 	Graph.ml	\
-	KSW.ml
+	Cliques.ml	\
+	Branch.ml	\
+	KSW.ml		\
+	Main.ml
 
 C_SOURCES = \
 
@@ -31,7 +34,7 @@ OBJS = $(SOURCES:.ml=.cmx)
 C_OBJS = $(C_SOURCES:.c=.o)
 MLIS := $(wildcard *.mli)
 
-ecc: $(OBJS) $(C_OBJS) Main.cmx
+ecc: $(OBJS) $(C_OBJS)
 	$(OCAMLOPT) $(PROFILE) -o $@ $(LIBS) $^
 
 doc/index.html: $(MLIS)
