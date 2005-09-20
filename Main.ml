@@ -82,8 +82,11 @@ let read_graph () =
 let usage_msg = "Find edge clique covers";;
 
 let complement_graph = ref false;;
+let stats_only       = ref false;;
 
 let specs = [
+  ("-s", Arg.Set(stats_only),
+         "Print statistics only");
   ("-c", Arg.Set(complement_graph),
          "Work on complement graph");
   ("-v", Arg.Set(Util.verbose),
@@ -112,7 +115,8 @@ let print_cliques cliques vertex_names =
 ;;
 
 let is_clique_cover g cliques =
-  let g = List.fold_left Graph.clear_subgraph g cliques in
+  List.for_all (fun c -> Graph.is_clique (Graph.subgraph g c)) cliques
+  && let g = List.fold_left Graph.clear_subgraph g cliques in
     Graph.num_edges g = 0
 ;;
 
@@ -120,19 +124,24 @@ let () =
   Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;  
   let g, vertex_names = read_graph () in
   let g = if !complement_graph then Graph.complement g else g in
-    Graph.dump g;
+(*     Graph.dump g; *)
+  let start = Util.timer () in
   let rec loop k =
     if !Util.verbose then Printf.eprintf "*** k = %d ***\n%!" k;
     match Branch.ecc_solve g k with
 	None -> loop (k + 1)
       | Some cliques ->
-	  assert (List.length cliques = k);
-	  if !Util.verbose then Printf.eprintf "Found solution with k = %d cliques\n%!" k;
-	  print_cliques cliques vertex_names;
-	  if not (is_clique_cover g cliques) then begin
-	    Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
-	    exit 1;
-	  end
+	  let stop = Util.timer () in
+	    assert (List.length cliques = k);
+	    if !Util.verbose then Printf.eprintf "Found solution with k = %d cliques\n%!" k;
+	    if not !stats_only
+	    then print_cliques cliques vertex_names
+	    else Printf.printf "%4d %5d %4d %10.2f\n"
+	      (Graph.num_vertices g) (Graph.num_edges g) k (stop -. start);
+	    if not (is_clique_cover g cliques) then begin
+	      Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
+	      exit 1;
+	    end
   in
     loop 0
 ;;

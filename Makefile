@@ -15,7 +15,7 @@ C_SOURCES = \
 
 
 INCLUDES  = #-I extlib-dev
-LIBS	  = #unix.cmxa
+LIBS	  = unix.cmxa
 
 CC	  = gcc
 OCAMLC    = ocamlc -w A -warn-error A $(INCLUDES)

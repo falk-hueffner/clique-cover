@@ -83,6 +83,7 @@ let iter_edges f g = fold_edges (fun () i j -> f i j) g ();;
 
 let map = IntMap.map;;
 
+let num_vertices g = fold_vertices (fun n _ _ -> n + 1) g 0;;
 let num_edges g = fold_edges (fun n _ _ -> n + 1) g 0;;
 
 let complement g =

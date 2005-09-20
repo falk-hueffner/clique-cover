@@ -1,5 +1,9 @@
 let verbose = ref false;;
 
+let timer () =
+  let stamp = Unix.times () in
+    stamp.Unix.tms_utime;;
+
 let output_list printer channel l =
   begin
     output_char channel '[';

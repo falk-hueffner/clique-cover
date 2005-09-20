@@ -8,6 +8,7 @@ type vertex = int;;
 val empty : t
 (** Returns the empty graph.  *)
 
+val num_vertices : t -> int
 val num_edges : t -> int
 val vertices : t -> IntSet.t
 val is_connected : t -> int -> int -> bool
