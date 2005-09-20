@@ -18,12 +18,22 @@ let connect g i j =
     g
 ;;
 
+let is_connected g i j = IntSet.contains (IntMap.get g i) j;;
+
 let subgraph g vs =
   IntSet.fold
     (fun g' v ->
       IntMap.add g' v (IntSet.intersection (neighbors g v) vs))
     vs
     empty
+;;
+
+let clear_subgraph g vs =
+  IntSet.fold
+    (fun g' v ->
+       IntMap.add g' v (IntSet.minus (neighbors g v) vs))
+    vs
+    g
 ;;
 
 let fold_vertices f g x = IntMap.fold f g x;;
@@ -65,6 +75,8 @@ let fold_edges f g accu =
 let iter_edges f g = fold_edges (fun () i j -> f i j) g ();;
 
 let map = IntMap.map;;
+
+let num_edges g = fold_edges (fun n _ _ -> n + 1) g 0;;
 
 let complement g =
   let vertices = vertices g
