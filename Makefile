@@ -10,6 +10,7 @@ SOURCES   = \
 	ECC.ml		\
 	Branch.ml	\
 	KSW.ml		\
+	Test.ml		\
 	Main.ml
 
 C_SOURCES = \
