@@ -16,6 +16,15 @@ let output_list printer channel l =
       loop l
   end;;
 
+let fold_n f n accu =
+  let rec loop accu i =
+    if i >= n
+    then accu
+    else loop (f accu i) (succ i)
+  in
+    loop accu 0
+;;
+
 let rec list_find_opt p = function
     [] -> None
   | x :: xs ->
