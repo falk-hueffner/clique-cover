@@ -58,6 +58,14 @@ let cover ecc clique =
 	   clique
 	   cache)
       clique
-      ecc.cache in    
-    { ecc with uncovered = uncovered; k = ecc.k - 1; cache = cache }
+      ecc.cache in
+  let g =
+    IntSet.fold
+      (fun g i ->
+	 if Graph.is_deg0 ecc.uncovered i
+	 then Graph.delete_vertex g i
+	 else g)
+      clique
+      ecc.g in
+    { g = g; uncovered = uncovered; k = ecc.k - 1; cache = cache }
 ;;

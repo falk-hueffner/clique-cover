@@ -1,21 +1,6 @@
 (* Find an edge to branch on. ECC.UNCOVERED is nonempty.  *)
 let spc n = String.make n ' ';;
 
-(*
-let reduce_singletons ecc =
-  let g, uncovered =
-    Graph.fold_vertices
-      (fun (g, uncovered) i neighbors ->
-	 if IntSet.is_empty neighbors
-	 then Graph.delete_vertex g i, Graph.delete_vertex uncovered i
-	 else g, uncovered)     
-      ecc.uncovered
-      (ecc.g, ecc.uncovered)      
-  in
-    { g = g; uncovered = uncovered; k = ecc.k }
-;;
-*)
-
 let branch_calls = ref 0L;;
 
 let rec branch ecc depth =
