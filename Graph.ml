@@ -1,6 +1,4 @@
-type vertex = int;;
-type neighborhood = IntSet.t;;
-type t = neighborhood IntMap.t;;
+type t = IntSet.t IntMap.t;;
 
 let empty = IntMap.empty;;
 
@@ -23,6 +21,17 @@ let connect g i j =
   let g = IntMap.add g i neighbors_i in
   let g = IntMap.add g j neighbors_j in
     g
+;;
+
+let delete_vertex g i =
+  let n = neighbors g i in
+  let g = IntMap.remove g i in
+    IntSet.fold
+      (fun g j ->
+	 let n' = IntSet.remove (neighbors g j) i in
+	   IntMap.add g j n')
+      n
+      g
 ;;
 
 let is_connected g i j = IntSet.contains (IntMap.get g i) j;;
@@ -57,6 +66,7 @@ let vertices g =
 let num_vertices = IntMap.size;;
 
 let deg g v = IntSet.size (neighbors g v);;
+let is_deg0 g v = IntSet.is_empty (neighbors g v);;
 
 let is_clique g =
   let d = (num_vertices g) - 1 in

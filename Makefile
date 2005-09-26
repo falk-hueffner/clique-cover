@@ -4,6 +4,7 @@ SOURCES   = \
 	Util.ml		\
 	IntMap.ml	\
 	IntSet.ml	\
+	PSQueue.ml	\
 	Graph.ml	\
 	Cliques.ml	\
 	ECC.ml		\
@@ -19,7 +20,7 @@ LIBS	  = unix.cmxa
 
 CC	  = gcc
 OCAMLC    = ocamlc -w A -warn-error A $(INCLUDES)
-OCAMLOPT  = ocamlopt -inline 1000000 -warn-error A $(INCLUDES)
+OCAMLOPT  = ocamlopt -warn-error A $(INCLUDES)
 OCAMLDEP  = ocamldep $(INCLUDES)
 
 #PROFILE  = -p

@@ -10,24 +10,24 @@ let max_cliques g =
       else cliques
     else
       let pivot = IntSet.choose cands in
-      let rec loop cands nots cliques =
-	if IntSet.is_empty cands
-	then cliques
-	else
-	  let u = IntSet.choose cands in
-	    if Graph.is_connected g u pivot
-	    then cliques
-	    else
-	      let cands = IntSet.remove cands u in
-	      let clique' = IntSet.add clique u in
-	      let u_neighbors = Graph.neighbors g u in
-	      let cands' = IntSet.intersection cands u_neighbors in
-	      let nots' = IntSet.intersection nots u_neighbors in
-	      let cliques = extend clique' cands' nots' cliques in
-	      let nots = IntSet.add nots u in
-		loop cands nots cliques
+      let _, _, cliques =
+	IntSet.fold
+	  (fun ((cands, nots, cliques) as state) u ->
+	     if Graph.is_connected g u pivot
+	     then state
+	     else
+	       let cands = IntSet.remove cands u in
+	       let clique' = IntSet.add clique u in
+	       let u_neighbors = Graph.neighbors g u in
+	       let cands' = IntSet.intersection cands u_neighbors in
+	       let nots' = IntSet.intersection nots u_neighbors in
+	       let cliques = extend clique' cands' nots' cliques in
+	       let nots = IntSet.add nots u in
+		 (cands, nots, cliques))
+	  cands
+	  (cands, nots, cliques)
       in
-        loop cands nots cliques
+        cliques
   in
     extend IntSet.empty (Graph.vertices g) IntSet.empty []
 ;;

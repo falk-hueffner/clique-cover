@@ -1,5 +1,7 @@
 *.cmi
 *.cmx
+*.graph
 .depend
 doc
 ecc
+gmon.out

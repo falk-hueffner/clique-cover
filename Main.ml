@@ -136,8 +136,8 @@ let () =
 	    if !Util.verbose then Printf.eprintf "Found solution with k = %d cliques\n%!" k;
 	    if not !stats_only
 	    then print_cliques cliques vertex_names
-	    else Printf.printf "%4d %5d %4d %10.2f\n"
-	      (Graph.num_vertices g) (Graph.num_edges g) k (stop -. start);
+	    else Printf.printf "%4d %5d %4d %10.2f %10Ld\n"
+	      (Graph.num_vertices g) (Graph.num_edges g) k (stop -. start) !Branch.branch_calls;
 	    if not (is_clique_cover g cliques) then begin
 	      Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
 	      exit 1;

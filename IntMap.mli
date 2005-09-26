@@ -8,6 +8,7 @@ val get : 'a t -> int -> 'a
 val get_default : 'a t -> int -> 'a -> 'a
 
 val add : 'a t -> int -> 'a -> 'a t
+val remove : 'a t -> int -> 'a t
 
 val fold : ('a -> int -> 'b -> 'a) -> 'b t -> 'a -> 'a
 val fold_inorder : ('a -> int -> 'b -> 'a) -> 'b t -> 'a -> 'a

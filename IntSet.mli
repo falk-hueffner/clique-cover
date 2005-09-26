@@ -16,6 +16,7 @@ val minus : t -> t -> t
 val intersection : t -> t -> t
 val intersection_size : t -> t -> int
 val split : t -> int -> t * bool * t
+val partition : (int -> bool) -> t -> t * t
 
 val fold : ('a -> int -> 'a) -> t -> 'a -> 'a
 val iter : (int -> unit) -> t -> unit

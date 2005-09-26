@@ -1,56 +1,48 @@
-open ECC;;
-
 (* Find an edge to branch on. ECC.UNCOVERED is nonempty.  *)
-let find_branching_edge ecc =
-  Graph.choose_edge ecc.uncovered;;
+let spc n = String.make n ' ';;
+
 (*
-  let i, j, _, _ =
-    Graph.fold_edges
-      (fun (best_i, best_j, best_c, best_a) i j ->
-	 let neighbors =
-	   IntSet.intersection (Graph.neighbors g i) (Graph.neighbors g j) in
-	 let num_neigbors = IntSet.size neighbors in
-	 let num_clique_edges = (num_neigbors * (num_neigbors - 1)) / 2 in
-	 let num_actual_edges = Graph.num_edges (Graph.subgraph g neighbors) in
-	   if best_i = -1
-	     || num_clique_edges - num_actual_edges < best_c - best_a
-	     || num_clique_edges - num_actual_edges = best_c - best_a
-	     && num_clique_edges < best_c
-	   then (i, j, num_clique_edges, num_actual_edges)
-	   else (best_i, best_j, best_c, best_a))
-      uncovered
-      (-1, 0, 0, 0)
+let reduce_singletons ecc =
+  let g, uncovered =
+    Graph.fold_vertices
+      (fun (g, uncovered) i neighbors ->
+	 if IntSet.is_empty neighbors
+	 then Graph.delete_vertex g i, Graph.delete_vertex uncovered i
+	 else g, uncovered)     
+      ecc.uncovered
+      (ecc.g, ecc.uncovered)      
   in
-    i, j
+    { g = g; uncovered = uncovered; k = ecc.k }
 ;;
 *)
 
-let spc n = String.make n ' ';;
+let branch_calls = ref 0L;;
 
 let rec branch ecc depth =
-  if Graph.num_edges ecc.uncovered = 0
+  branch_calls := Int64.succ !branch_calls;
+  if ECC.all_covered ecc
   then Some []
-  else if ecc.k <= 0
+  else if ECC.k ecc <= 0
   then None
   else
-    let i, j = find_branching_edge ecc in
-(*     Printf.eprintf "%sbranch on %d %d%!" (spc depth) i j; *)
+(*     let ecc = reduce_singletons ecc in *)
+    let i, j = ECC.branching_edge ecc in
+(*      Printf.eprintf "%sbranch on %d %d%!" (spc depth) i j;  *)
     let neighbors =
-      IntSet.intersection (Graph.neighbors ecc.g i) (Graph.neighbors ecc.g j) in
+      IntSet.intersection (Graph.neighbors (ECC.g ecc) i) (Graph.neighbors (ECC.g ecc) j) in
     let cliques =
-      Cliques.max_cliques (Graph.subgraph ecc.g neighbors) in
-(*     Printf.eprintf " -> %a\n%!" (Util.output_list IntSet.output) cliques; *)
+      Cliques.max_cliques (Graph.subgraph (ECC.g ecc) neighbors) in
     let cliques = List.map (fun s -> IntSet.add s i) cliques in
     let cliques = List.map (fun s -> IntSet.add s j) cliques in
+(*     Printf.eprintf " -> %a\n%!" (Util.output_list IntSet.output) cliques; *)
       Util.list_find_opt
-	(fun clique ->	   
-	   let uncovered = Graph.clear_subgraph ecc.uncovered clique in
-	     match branch { g = ecc.g; uncovered = uncovered; k = ecc.k - 1 } (depth + 1) with
-		 None -> None
-	       | Some cover -> Some (clique :: cover))
+	(fun clique ->
+	   match branch (ECC.cover ecc clique) (depth + 1) with
+	       None -> None
+	     | Some cover -> Some (clique :: cover))
 	cliques
 ;;
 
 let ecc_solve g k =
-  branch { g = g; uncovered = g; k = k; } 0
+  branch (ECC.make g k) 0
 ;;

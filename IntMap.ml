@@ -10,6 +10,7 @@ let get m v = M.find v m;;
 let get_default m v d = try get m v with Not_found -> d;;
 
 let add m k v = M.add k v m;;
+let remove m k = M.remove k m;;
 
 let map = M.mapi;;
 let iter = M.iter;;
