@@ -29,7 +29,9 @@ let rec branch ecc depth =
     let i, j = ECC.branching_edge ecc in
 (*      Printf.eprintf "%sbranch on %d %d%!" (spc depth) i j;  *)
     let neighbors =
-      IntSet.intersection (Graph.neighbors (ECC.g ecc) i) (Graph.neighbors (ECC.g ecc) j) in
+      IntSet.intersection
+	(Graph.neighbors (ECC.g ecc) i)
+	(Graph.neighbors (ECC.g ecc) j) in
     let cliques =
       Cliques.max_cliques (Graph.subgraph (ECC.g ecc) neighbors) in
     let cliques = List.map (fun s -> IntSet.add s i) cliques in
@@ -43,6 +45,14 @@ let rec branch ecc depth =
 	cliques
 ;;
 
-let ecc_solve g k =
-  branch (ECC.make g k) 0
+let ecc_solve g =
+  let ecc = ECC.make g in
+  let rec loop k =
+    if !Util.verbose then Printf.eprintf "*** k = %d ***\n%!" k;
+    let ecc = ECC.set_k ecc k in
+      match branch ecc 0 with
+        None -> loop (k + 1)
+      | Some cliques -> cliques
+  in
+    loop 0
 ;;

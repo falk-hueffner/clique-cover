@@ -126,22 +126,16 @@ let () =
   let g = if !complement_graph then Graph.complement g else g in
 (*     Graph.dump g; *)
   let start = Util.timer () in
-  let rec loop k =
-    if !Util.verbose then Printf.eprintf "*** k = %d ***\n%!" k;
-    match Branch.ecc_solve g k with
-	None -> loop (k + 1)
-      | Some cliques ->
-	  let stop = Util.timer () in
-	    assert (List.length cliques = k);
-	    if !Util.verbose then Printf.eprintf "Found solution with k = %d cliques\n%!" k;
-	    if not !stats_only
-	    then print_cliques cliques vertex_names
-	    else Printf.printf "%4d %5d %4d %10.2f %10Ld\n"
-	      (Graph.num_vertices g) (Graph.num_edges g) k (stop -. start) !Branch.branch_calls;
-	    if not (is_clique_cover g cliques) then begin
-	      Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
-	      exit 1;
-	    end
-  in
-    loop 0
+  let cliques = Branch.ecc_solve g in
+  let stop = Util.timer () in begin
+    if not !stats_only
+    then print_cliques cliques vertex_names
+    else Printf.printf "%4d %5d %4d %10.2f %10Ld\n"
+	(Graph.num_vertices g) (Graph.num_edges g)
+	(List.length cliques) (stop -. start) !Branch.branch_calls;
+    if not (is_clique_cover g cliques) then begin
+      Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
+      exit 1;
+    end
+  end
 ;;

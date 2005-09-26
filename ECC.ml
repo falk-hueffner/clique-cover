@@ -12,7 +12,7 @@ let uncovered ecc = ecc.uncovered;;
 
 let all_covered ecc = PSQueue.is_empty ecc.cache;;
 
-let make g k =
+let make g =
   Printf.eprintf "heating up cache...%!";
   let cache =
     Graph.fold_edges
@@ -32,14 +32,16 @@ let make g k =
     Printf.eprintf "done\n%!";
     { g         = g;
       uncovered = g;
-      k         = k;
+      k         = 0;
       cache     = cache;
     }
 ;;
 
+let set_k ecc k = { ecc with k = k }
+
 let branching_edge ecc =
   let (i, j), _, score = PSQueue.top ecc.cache in
-    Printf.eprintf "selecting edge %d %d with score %d\n%!" i j score;
+(*     Printf.eprintf "selecting edge %d %d with score %d\n%!" i j score; *)
     (i, j)
 ;;
 
