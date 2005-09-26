@@ -6,6 +6,8 @@ type t
 val empty : t
 (** Returns the empty graph.  *)
 
+val make_clique : int -> t
+
 val num_vertices : t -> int
 val num_edges : t -> int
 val vertices : t -> IntSet.t
@@ -17,6 +19,8 @@ val choose_edge : t -> int * int
 
 val connect : t -> int -> int -> t
 (** [connect g v w] connects vertices [v] and [w] in [g]. Takes O(log n) time.  *)
+
+val disconnect : t -> int -> int -> t
 
 val delete_vertex : t -> int -> t
   

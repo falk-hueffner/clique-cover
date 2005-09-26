@@ -2,6 +2,11 @@ type t = IntSet.t IntMap.t;;
 
 let empty = IntMap.empty;;
 
+let make_clique k =
+  let neigh = Util.fold_n IntSet.add k IntSet.empty in
+    Util.fold_n (fun g i -> IntMap.add g i (IntSet.remove neigh i)) k empty
+;;
+
 let neighbors g i = IntMap.get g i;;
 let neighbors' g i = try neighbors g i with Not_found -> IntSet.empty;;
 
@@ -18,6 +23,17 @@ let connect g i j =
   let neighbors_j = neighbors' g j in
   let neighbors_i = IntSet.add neighbors_i j in
   let neighbors_j = IntSet.add neighbors_j i in
+  let g = IntMap.add g i neighbors_i in
+  let g = IntMap.add g j neighbors_j in
+    g
+;;
+
+let disconnect g i j =
+  assert (i <> j);
+  let neighbors_i = neighbors' g i in
+  let neighbors_j = neighbors' g j in
+  let neighbors_i = IntSet.remove neighbors_i j in
+  let neighbors_j = IntSet.remove neighbors_j i in
   let g = IntMap.add g i neighbors_i in
   let g = IntMap.add g j neighbors_j in
     g
