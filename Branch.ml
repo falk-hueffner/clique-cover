@@ -39,5 +39,5 @@ let ecc_solve g =
         None -> loop (k + 1)
       | Some cliques -> cliques
   in
-    loop (ECC.k ecc)
+    restorer (loop (ECC.k ecc))
 ;;
