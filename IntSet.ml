@@ -17,8 +17,11 @@ let union = S.union;;
 let minus = S.diff;;
 let intersection s1 s2 = S.inter s1 s2;;
 let intersection_size s1 s2 = S.cardinal (S.inter s1 s2);;
+let do_intersect s1 s2 = not (is_empty (intersection s1 s2));;
 let split s x = S.split x s;;
 let partition p s = S.partition p s;;
+
+let for_all p s = S.for_all p s;;
 
 let fold f s accu = S.fold (fun i accu -> f accu i) s accu;;
 let iter = S.iter;;
