@@ -13,7 +13,7 @@ let uncovered ecc = ecc.uncovered;;
 let all_covered ecc = PSQueue.is_empty ecc.cache;;
 
 let make g =
-  Printf.eprintf "heating up cache...%!";
+  if !Util.verbose then Printf.eprintf "heating up cache...%!";
   let cache =
     Graph.fold_edges
       (fun cache i j ->
@@ -29,7 +29,7 @@ let make g =
       g
       PSQueue.empty
   in
-    Printf.eprintf "done\n%!";
+    if !Util.verbose then Printf.eprintf "done\n%!";
     { g         = g;
       uncovered = g;
       k         = 0;
@@ -66,6 +66,7 @@ let cover ecc clique =
 	 then Graph.delete_vertex g i
 	 else g)
       clique
-      ecc.g in
-    { g = g; uncovered = uncovered; k = ecc.k - 1; cache = cache }
+      ecc.g in    
+  let ecc = { g = g; uncovered = uncovered; k = ecc.k - 1; cache = cache } in
+    ecc
 ;;
