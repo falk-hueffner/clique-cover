@@ -37,8 +37,6 @@ let make g =
     }
 ;;
 
-let set_k ecc k = { ecc with k = k }
-
 let branching_edge ecc =
   let (i, j), _, score = PSQueue.top ecc.cache in
 (*     Printf.eprintf "selecting edge %d %d with score %d\n%!" i j score; *)
@@ -67,6 +65,6 @@ let cover ecc clique =
 	 else g)
       clique
       ecc.g in    
-  let ecc = { g = g; uncovered = uncovered; k = ecc.k - 1; cache = cache } in
+  let ecc = { g = g; uncovered = uncovered; k = ecc.k + 1; cache = cache } in
     ecc
 ;;
