@@ -12,6 +12,8 @@ let uncovered ecc = ecc.uncovered;;
 
 let all_covered ecc = PSQueue.is_empty ecc.cache;;
 
+let identity x = x;;
+
 let make g =
   if !Util.verbose then Printf.eprintf "heating up cache...%!";
   let cache =
@@ -30,11 +32,13 @@ let make g =
       PSQueue.empty
   in
     if !Util.verbose then Printf.eprintf "done\n%!";
-    { g         = g;
+    let ecc = {
+      g         = g;
       uncovered = g;
       k         = 0;
       cache     = cache;
-    }
+    } in
+      ecc, identity
 ;;
 
 let branching_edge ecc =
@@ -66,5 +70,5 @@ let cover ecc clique =
       clique
       ecc.g in    
   let ecc = { g = g; uncovered = uncovered; k = ecc.k + 1; cache = cache } in
-    ecc
+    ecc, (fun cliques -> clique :: cliques)
 ;;
