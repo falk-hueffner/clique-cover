@@ -36,18 +36,70 @@ let do_cover ecc clique =
     ecc, (fun cliques -> clique :: cliques)
 ;;
 
+let edge_score g i j =
+  let neighbors =
+    IntSet.intersection
+      (Graph.neighbors g i)
+      (Graph.neighbors g j) in
+  let num_neigbors = IntSet.size neighbors in
+  let num_clique_edges = (num_neigbors * (num_neigbors - 1)) / 2 in
+  let num_actual_edges = Graph.num_edges (Graph.subgraph g neighbors) in
+  let score = num_clique_edges - num_actual_edges in
+    neighbors, num_neigbors, score
+;;
+
+let verify_cache ecc =
+  PSQueue.fold
+    (fun () (i, j) (neighbors, num_neigbors) score ->
+       let neighbors', num_neigbors', score' = edge_score ecc.g i j in
+	 if not (Graph.is_connected ecc.uncovered i j)
+	 then Printf.eprintf "bogus edge %d %d\n%!" i j;
+	 if neighbors <> neighbors'
+	 then Printf.eprintf "bogus neighbor set for %d %d\n%!" i j;
+	 if num_neigbors <>  num_neigbors'
+	 then Printf.eprintf "bogus neighbor set size for %d %d\n%!" i j;
+	 if score <> score'
+	 then Printf.eprintf "bogus score for %d %d\n%!" i j)
+    ecc.cache
+    ()
+;;
+
+module EdgeSet = Set.Make(struct type t = int * int let compare = compare end);;
+
 (* Reduce vertices adjacent to no uncovered edge. Restrict search to
    VERTICES. *)
 let reduce_deg0vertices ecc vertices =
-  let g, uncovered =
+  let g, uncovered, edges_to_update =
     IntSet.fold
-      (fun (g, uncovered) i ->
-	 if Graph.is_deg0 uncovered i
-	 then Graph.delete_vertex g i, Graph.delete_vertex uncovered i
-	 else g, uncovered)
+      (fun (g, uncovered, edges_to_update) i ->
+	 if not (Graph.is_deg0 uncovered i)
+	 then g, uncovered, edges_to_update
+	 else (
+	   let g' = Graph.delete_vertex g i in
+	   let uncovered' = Graph.delete_vertex uncovered i in
+	   let edges_to_update' =
+	     Graph.fold_edges
+	       (fun edges_to_update j k -> EdgeSet.add (j, k) edges_to_update)
+	       (Graph.subgraph uncovered (Graph.neighbors g i))
+	       edges_to_update
+	   in
+	     g', uncovered', edges_to_update'))
       vertices
-      (ecc.g, ecc.uncovered) in
-    (* FIXME update cache *)
+      (ecc.g, ecc.uncovered, EdgeSet.empty) in
+  let cache =
+    EdgeSet.fold
+      (fun (i, j) cache ->
+	 if not (Graph.has_vertex g i && Graph.has_vertex g j)
+	 then cache
+	 else
+	   let (neighbors', num_neigbors'), score' = PSQueue.get cache (i, j) in	     
+	   let neighbors, num_neigbors, score = edge_score g i j in
+(* 	     Printf.eprintf "%3d %3d -> %3d %3d\n%!" *)
+(* 	       num_neigbors' score' num_neigbors score; *)
+	     PSQueue.add cache (i, j) (neighbors, num_neigbors) score)
+      edges_to_update
+      ecc.cache
+  in
     { ecc with g = g; uncovered = uncovered }
 ;;
 
@@ -73,14 +125,8 @@ let make g =
   let cache =
     Graph.fold_edges
       (fun cache i j ->
-	 let neighbors =
-	   IntSet.intersection
-	     (Graph.neighbors g i)
-	     (Graph.neighbors g j) in
-	 let num_neigbors = IntSet.size neighbors in
-	 let num_clique_edges = (num_neigbors * (num_neigbors - 1)) / 2 in
-	 let num_actual_edges = Graph.num_edges (Graph.subgraph g neighbors) in
-	 let score = num_clique_edges - num_actual_edges in
+	 assert (i < j);
+	 let neighbors, num_neigbors, score = edge_score g i j in
 	   PSQueue.add cache (i, j) (neighbors, num_neigbors) score)
       g
       PSQueue.empty
@@ -106,5 +152,6 @@ let branching_edge ecc =
 let cover ecc clique =
   let ecc, restorer = do_cover ecc clique in
   let ecc = reduce_deg0vertices ecc clique in
+(*     verify_cache ecc; *)
     ecc, restorer
 ;;
