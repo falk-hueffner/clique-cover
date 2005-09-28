@@ -20,7 +20,7 @@ INCLUDES  = #-I extlib-dev
 LIBS	  = unix.cmxa
 
 CC	  = gcc
-OCAMLC    = ocamlc -w A -warn-error A $(INCLUDES)
+OCAMLC    = ocamlc -g -w A -warn-error A $(INCLUDES)
 OCAMLOPT  = ocamlopt -warn-error A $(INCLUDES)
 OCAMLDEP  = ocamldep $(INCLUDES)
 
@@ -34,11 +34,16 @@ CFLAGS	 += -W -Wall -Wno-unused -Werror
 all: depend $(EXEC) doc/index.html
 
 OBJS = $(SOURCES:.ml=.cmx)
+DBG_OBJS = $(SOURCES:.ml=.cmo)
 C_OBJS = $(C_SOURCES:.c=.o)
 MLIS := $(wildcard *.mli)
+DBG_LIBS = $(LIBS:.cmxa=.cma)
 
 ecc: $(OBJS) $(C_OBJS)
 	$(OCAMLOPT) $(PROFILE) -o $@ $(LIBS) $^
+
+ecc-dbg: $(DBG_OBJS) $(C_OBJS)
+	$(OCAMLC) $(PROFILE) -o $@ $(DBG_LIBS) $^
 
 doc/index.html: $(MLIS)
 	mkdir -p doc
@@ -56,7 +61,7 @@ doc/index.html: $(MLIS)
 	$(OCAMLOPT) $(PROFILE) -c $<
 
 clean:
-	rm -f $(EXEC) core gmon.out
+	rm -f $(EXEC) $(EXEC)-dbg core gmon.out
 	rm -f *.cm[iox] *.o $(PROJ)
 
 realclean: clean
