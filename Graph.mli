@@ -10,6 +10,7 @@ val make_clique : int -> t
 
 val num_vertices : t -> int
 val num_edges : t -> int
+val has_vertex : t -> int -> bool
 val vertices : t -> IntSet.t
 val is_connected : t -> int -> int -> bool
 val neighbors : t -> int -> IntSet.t

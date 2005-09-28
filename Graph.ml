@@ -7,6 +7,8 @@ let make_clique k =
     Util.fold_n (fun g i -> IntMap.add g i (IntSet.remove neigh i)) k empty
 ;;
 
+let has_vertex g i = IntMap.has_key g i;;
+
 let neighbors g i = IntMap.get g i;;
 let neighbors' g i = try neighbors g i with Not_found -> IntSet.empty;;
 
