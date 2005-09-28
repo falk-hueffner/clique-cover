@@ -65,36 +65,35 @@ let verify_cache ecc =
     ()
 ;;
 
-module EdgeSet = Set.Make(struct type t = int * int let compare = compare end);;
-
+let del_vertex ecc i =
+  let g = Graph.delete_vertex ecc.g i in
+  let uncovered = Graph.delete_vertex ecc.uncovered i in
+  let neighbors_i = Graph.neighbors ecc.g i in
+  let cache =
+    Graph.fold_edges
+      (fun cache j k ->
+	 let (neighbors, num_neigbors), score = PSQueue.get cache (j, k) in
+	 let neighbors' = IntSet.remove neighbors i in
+	 let num_neigbors' = num_neigbors - 1 in
+	 let score' = score - num_neigbors'
+	   + IntSet.intersection_size neighbors_i neighbors' in
+	   PSQueue.add cache (j, k) (neighbors', num_neigbors') score')
+      (Graph.subgraph ecc.uncovered neighbors_i)
+      ecc.cache
+  in
+    { ecc with g = g; uncovered = uncovered; cache = cache }
+;;
+  
 (* Reduce vertices adjacent to no uncovered edge. Restrict search to
    VERTICES. *)
 let reduce_deg0vertices ecc vertices =
-  let g, uncovered, cache =
-    IntSet.fold
-      (fun (g, uncovered, cache) i ->
-	 if not (Graph.is_deg0 uncovered i)
-	 then g, uncovered, cache
-	 else (
-	   let g' = Graph.delete_vertex g i in
-	   let uncovered' = Graph.delete_vertex uncovered i in
-	   let neighbors_i = Graph.neighbors g i in
-	   let cache =
-	     Graph.fold_edges
-	       (fun cache j k ->
-		  let (neighbors, num_neigbors), score = PSQueue.get cache (j, k) in
-		  let neighbors' = IntSet.remove neighbors i in
-		  let num_neigbors' = num_neigbors - 1 in
-		  let score' = score - num_neigbors'
-		    + IntSet.intersection_size neighbors_i neighbors' in
-		    PSQueue.add cache (j, k) (neighbors', num_neigbors') score')
-	       (Graph.subgraph uncovered neighbors_i)
-	       cache
-	   in
-	     g', uncovered', cache))
-      vertices
-      (ecc.g, ecc.uncovered, ecc.cache) in
-    { ecc with g = g; uncovered = uncovered; cache = cache }
+  IntSet.fold
+    (fun ecc i ->
+       if not (Graph.is_deg0 ecc.uncovered i)
+       then ecc
+       else del_vertex ecc i)
+    vertices
+    ecc
 ;;
 
 let reduce_only1maxcliq ecc =
