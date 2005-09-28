@@ -27,6 +27,8 @@ let top q =
     | Some ((k, v, p) as r) -> r
 ;;
 
+let get q k = M.find k q;;
+
 let pop q =
   match
     M.fold
@@ -43,3 +45,5 @@ let pop q =
 ;;
 
 let remove q k = M.remove k q;;
+
+let fold f q x = M.fold (fun k (v, p) x -> f x k v p) q x;;
