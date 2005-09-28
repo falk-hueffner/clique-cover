@@ -145,6 +145,8 @@ let branching_edge ecc =
 
 let cover ecc clique =
   let ecc, restorer = do_cover ecc clique in
+  let ecc, restorer' = reduce_only1maxcliq ecc in
+  let restorer = restorer @@ restorer' in
   let ecc = reduce_deg0vertices ecc clique in
 (*     verify_cache ecc; *)
     ecc, restorer
