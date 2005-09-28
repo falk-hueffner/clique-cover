@@ -100,7 +100,7 @@ let reduce_deg0vertices ecc vertices =
       edges_to_update
       ecc.cache
   in
-    { ecc with g = g; uncovered = uncovered }
+    { ecc with g = g; uncovered = uncovered; cache = cache }
 ;;
 
 let reduce_only1maxcliq ecc =
