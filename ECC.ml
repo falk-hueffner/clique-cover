@@ -54,8 +54,9 @@ let verify_cache ecc =
        let neighbors', num_neigbors', score' = edge_score ecc.g i j in
 	 if not (Graph.is_connected ecc.uncovered i j)
 	 then Printf.eprintf "bogus edge %d %d\n%!" i j;
-	 if neighbors <> neighbors'
-	 then Printf.eprintf "bogus neighbor set for %d %d\n%!" i j;
+(* 	 if neighbors <> neighbors' *)
+(* 	 then Printf.eprintf "bogus neighbor set for %d %d: %a, should be %a\n%!" *)
+(* 	   i j IntSet.output neighbors IntSet.output neighbors'; *)
 	 if num_neigbors <>  num_neigbors'
 	 then Printf.eprintf "bogus neighbor set size for %d %d\n%!" i j;
 	 if score <> score'
@@ -69,37 +70,30 @@ module EdgeSet = Set.Make(struct type t = int * int let compare = compare end);;
 (* Reduce vertices adjacent to no uncovered edge. Restrict search to
    VERTICES. *)
 let reduce_deg0vertices ecc vertices =
-  let g, uncovered, edges_to_update =
+  let g, uncovered, cache =
     IntSet.fold
-      (fun (g, uncovered, edges_to_update) i ->
+      (fun (g, uncovered, cache) i ->
 	 if not (Graph.is_deg0 uncovered i)
-	 then g, uncovered, edges_to_update
+	 then g, uncovered, cache
 	 else (
 	   let g' = Graph.delete_vertex g i in
 	   let uncovered' = Graph.delete_vertex uncovered i in
-	   let edges_to_update' =
+	   let neighbors_i = Graph.neighbors g i in
+	   let cache =
 	     Graph.fold_edges
-	       (fun edges_to_update j k -> EdgeSet.add (j, k) edges_to_update)
-	       (Graph.subgraph uncovered (Graph.neighbors g i))
-	       edges_to_update
+	       (fun cache j k ->
+		  let (neighbors, num_neigbors), score = PSQueue.get cache (j, k) in
+		  let neighbors' = IntSet.remove neighbors i in
+		  let num_neigbors' = num_neigbors - 1 in
+		  let score' = score - num_neigbors'
+		    + IntSet.intersection_size neighbors_i neighbors' in
+		    PSQueue.add cache (j, k) (neighbors', num_neigbors') score')
+	       (Graph.subgraph uncovered neighbors_i)
+	       cache
 	   in
-	     g', uncovered', edges_to_update'))
+	     g', uncovered', cache))
       vertices
-      (ecc.g, ecc.uncovered, EdgeSet.empty) in
-  let cache =
-    EdgeSet.fold
-      (fun (i, j) cache ->
-	 if not (Graph.has_vertex g i && Graph.has_vertex g j)
-	 then cache
-	 else
-	   let (neighbors', num_neigbors'), score' = PSQueue.get cache (i, j) in	     
-	   let neighbors, num_neigbors, score = edge_score g i j in
-(* 	     Printf.eprintf "%3d %3d -> %3d %3d\n%!" *)
-(* 	       num_neigbors' score' num_neigbors score; *)
-	     PSQueue.add cache (i, j) (neighbors, num_neigbors) score)
-      edges_to_update
-      ecc.cache
-  in
+      (ecc.g, ecc.uncovered, ecc.cache) in
     { ecc with g = g; uncovered = uncovered; cache = cache }
 ;;
 
