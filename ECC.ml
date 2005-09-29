@@ -2,6 +2,7 @@ type t = {
   g:	     Graph.t;
   uncovered: Graph.t;
   k:	     int;
+  max_k:     int;
   (* Caches  *)
   cache:     (IntSet.t * int) PSQueue.t;
 };;
@@ -9,8 +10,11 @@ type t = {
 let g ecc = ecc.g;;
 let k ecc = ecc.k;;
 let uncovered ecc = ecc.uncovered;;
+let k_used_up ecc = ecc.k >= ecc.max_k;;
 
 let all_covered ecc = PSQueue.is_empty ecc.cache;;
+
+let set_max_k ecc max_k = { ecc with max_k = max_k };;
 
 let identity x = x;;
 
@@ -129,6 +133,7 @@ let make g =
       g         = g;
       uncovered = g;
       k         = 0;
+      max_k     = 0;
       cache     = cache; } in
     let ecc, restorer = reduce_only1maxcliq ecc in
     let ecc = reduce_deg0vertices ecc (Graph.vertices ecc.g) in

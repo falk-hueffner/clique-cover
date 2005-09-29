@@ -3,11 +3,11 @@ let spc n = String.make n ' ';;
 
 let branch_calls = ref 0L;;
 
-let rec branch ecc max_k depth =
+let rec branch ecc depth =
   branch_calls := Int64.succ !branch_calls;
   if ECC.all_covered ecc
   then Some []
-  else if ECC.k ecc >= max_k
+  else if ECC.k_used_up ecc
   then None
   else
 (*     let ecc = reduce_singletons ecc in *)
@@ -25,7 +25,7 @@ let rec branch ecc max_k depth =
       Util.list_find_opt
 	(fun clique ->
 	   let ecc, restorer = ECC.cover ecc clique in
-	     match branch ecc max_k (depth + 1)  with
+	     match branch ecc (depth + 1)  with
 		 None -> None
 	       | Some cover -> Some (restorer cover))
 	cliques
@@ -34,10 +34,11 @@ let rec branch ecc max_k depth =
 let ecc_solve g =
   let ecc, restorer = ECC.make g in
   let rec loop k =
-    if !Util.verbose then Printf.eprintf "*** k = %d ***\n%!" k;
-    match branch ecc k 0 with
-        None -> loop (k + 1)
-      | Some cliques -> cliques
+    let ecc = ECC.set_max_k ecc k in
+      if !Util.verbose then Printf.eprintf "*** k = %d ***\n%!" k;
+      match branch ecc 0 with
+          None -> loop (k + 1)
+	| Some cliques -> cliques
   in
     restorer (loop (ECC.k ecc))
 ;;
