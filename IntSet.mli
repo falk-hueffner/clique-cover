@@ -6,6 +6,7 @@ val singleton : int -> t
 val is_empty : t -> bool
 val size : t -> int
 val contains : t -> int -> bool
+val equal : t -> t -> bool
 val is_subset : t -> t -> bool
 val choose: t -> int
 

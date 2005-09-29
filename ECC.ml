@@ -54,9 +54,9 @@ let verify_cache ecc =
        let neighbors', num_neigbors', score' = edge_score ecc.g i j in
 	 if not (Graph.is_connected ecc.uncovered i j)
 	 then Printf.eprintf "bogus edge %d %d\n%!" i j;
-(* 	 if neighbors <> neighbors' *)
-(* 	 then Printf.eprintf "bogus neighbor set for %d %d: %a, should be %a\n%!" *)
-(* 	   i j IntSet.output neighbors IntSet.output neighbors'; *)
+	 if not (IntSet.equal neighbors neighbors')
+	 then Printf.eprintf "bogus neighbor set for %d %d: %a, should be %a\n%!"
+	   i j IntSet.output neighbors IntSet.output neighbors';
 	 if num_neigbors <>  num_neigbors'
 	 then Printf.eprintf "bogus neighbor set size for %d %d\n%!" i j;
 	 if score <> score'

@@ -8,6 +8,7 @@ let singleton = S.singleton;;
 let is_empty = S.is_empty;;
 let size s = S.fold (fun _ size -> size + 1) s 0;;
 let contains s x = S.mem x s;;
+let equal = S.equal;;
 let is_subset s1 s2 = S.subset s1 s2;;
 let choose = S.choose;;
 
