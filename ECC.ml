@@ -7,6 +7,14 @@ type t = {
   cache:     (IntSet.t * int) PSQueue.t;
 };;
 
+let use_rule1        = ref true;;
+let use_rule2        = ref true;;
+let use_rule3        = ref true;;
+
+let rule1_counter = ref (Int64.zero);;
+let rule2_counter = ref (Int64.zero);;
+let rule3_counter = ref (Int64.zero);;
+
 let g ecc = ecc.g;;
 let k ecc = ecc.k;;
 let uncovered ecc = ecc.uncovered;;
@@ -75,6 +83,12 @@ let del_vertex ecc i =
   let uncovered = Graph.delete_vertex ecc.uncovered i in
   let neighbors_i = Graph.neighbors ecc.g i in
   let cache =
+    Graph.fold_neighbors
+      (fun cache j -> PSQueue.remove cache (i, j))
+      ecc.uncovered
+      i
+      ecc.cache in
+  let cache =
     Graph.fold_edges
       (fun cache j k ->
 	 let (neighbors, num_neigbors), score = PSQueue.get cache (j, k) in
@@ -84,7 +98,7 @@ let del_vertex ecc i =
 	   + IntSet.intersection_size neighbors_i neighbors' in
 	   PSQueue.add cache (j, k) (neighbors', num_neigbors') score')
       (Graph.subgraph ecc.uncovered neighbors_i)
-      ecc.cache
+      cache
   in
     { ecc with g = g; uncovered = uncovered; cache = cache }
 ;;
@@ -92,16 +106,21 @@ let del_vertex ecc i =
 (* Reduce vertices adjacent to no uncovered edge. Restrict search to
    VERTICES. *)
 let reduce_deg0vertices ecc vertices =
+  if not !use_rule1 then ecc else
   IntSet.fold
     (fun ecc i ->
        if not (Graph.is_deg0 ecc.uncovered i)
        then ecc
-       else del_vertex ecc i)
+       else begin
+	 Util.int64_incr rule1_counter;
+	 del_vertex ecc i
+       end)
     vertices
     ecc
 ;;
 
 let reduce_only1maxcliq ecc =
+  if not !use_rule2 then ecc, identity else
   let rec loop ecc restorer =
     if k_used_up ecc || PSQueue.is_empty ecc.cache
     then ecc, restorer
@@ -109,13 +128,43 @@ let reduce_only1maxcliq ecc =
       let (i, j), (neighbors, num_neigbors), score = PSQueue.top ecc.cache in
 	if score > 0
 	then ecc, restorer
-	else
+	else begin
+	  Util.int64_incr rule2_counter;
 	  let clique = IntSet.add neighbors i in
 	  let clique = IntSet.add clique j in
 	  let ecc, restorer' = do_cover ecc clique in
 	    loop ecc (restorer @@ restorer')
+	end
   in
     loop ecc identity
+;;
+
+let rec prison_reduce ecc vertices =
+  if not !use_rule3 then ecc else
+  if k_used_up ecc || IntSet.is_empty vertices
+  then ecc
+  else
+    let i = IntSet.choose vertices in
+    let vertices = IntSet.remove vertices i in
+    let neigh = Graph.neighbors ecc.uncovered i in
+    let prisoners, exits =
+      IntSet.fold
+	(fun (prisoners, exits) j ->
+	   if IntSet.is_subset (Graph.neighbors ecc.g j) neigh
+	   then IntSet.add prisoners j, exits
+	   else prisoners, IntSet.add exits j)
+	neigh
+	(IntSet.empty, IntSet.empty)
+    in
+      if not(IntSet.for_all
+	       (fun x -> IntSet.do_intersect (Graph.neighbors ecc.g x) prisoners)
+	       exits)
+      then prison_reduce ecc vertices
+      else begin
+	Util.int64_incr rule3_counter;
+	(* FIXME prepare restorer  *)
+	prison_reduce (del_vertex ecc i) vertices
+      end
 ;;
 
 let make g =
@@ -138,6 +187,7 @@ let make g =
       cache     = cache; } in
     let ecc, restorer = reduce_only1maxcliq ecc in
     let ecc = reduce_deg0vertices ecc (Graph.vertices ecc.g) in
+(*     let ecc = prison_reduce ecc (Graph.vertices ecc.g) in *)
 (*       Printf.printf "reduced to k = %d\n" ecc.k; *)
       ecc, restorer
 ;;
@@ -153,6 +203,7 @@ let cover ecc clique =
   let ecc, restorer' = reduce_only1maxcliq ecc in
   let restorer = restorer @@ restorer' in
   let ecc = reduce_deg0vertices ecc clique in
+  let ecc = prison_reduce ecc (Graph.vertices ecc.g) in
 (*     verify_cache ecc; *)
     ecc, restorer
 ;;

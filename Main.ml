@@ -91,7 +91,14 @@ let specs = [
          "Work on complement graph");
   ("-v", Arg.Set(Util.verbose),
          "Print progress to stderr");
-];;
+  ("-1", Arg.Clear(ECC.use_rule1),
+         "Disable Rule 1");
+  ("-2", Arg.Clear(ECC.use_rule2),
+         "Disable Rule 3");
+  ("-3", Arg.Clear(ECC.use_rule3),
+         "Disable Rule 3");
+]
+;;
 
 let print_cliques cliques vertex_names =
   let cliques = List.map
@@ -130,9 +137,10 @@ let () =
   let stop = Util.timer () in begin
     if not !stats_only
     then print_cliques cliques vertex_names
-    else Printf.printf "%4d %5d %4d %10.2f %10Ld\n"
+    else Printf.printf "%4d %5d %4d %10.2f %10Ld %10Ld %10Ld %10Ld\n"
 	(Graph.num_vertices g) (Graph.num_edges g)
-	(List.length cliques) (stop -. start) !Branch.branch_calls;
+	(List.length cliques) (stop -. start) !Branch.branch_calls
+	!ECC.rule1_counter !ECC.rule2_counter !ECC.rule3_counter;
     if not (is_clique_cover g cliques) then begin
       Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
       exit 1;

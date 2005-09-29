@@ -32,5 +32,7 @@ let rec list_find_opt p = function
 	if r <> None then r else list_find_opt p xs
 ;;
 
+let int64_incr x = x := Int64.succ !x;;
+
 let print_list printer l = output_list printer stdout l;;
 let dump_list printer l = output_list printer stderr l;;
