@@ -21,6 +21,7 @@ let identity x = x;;
 let (@@) f g = fun x -> f (g x);;
 
 let do_cover ecc clique =
+  assert (not (k_used_up ecc));
   let uncovered = Graph.clear_subgraph ecc.uncovered clique in
   let cache =
     IntSet.fold
@@ -102,7 +103,7 @@ let reduce_deg0vertices ecc vertices =
 
 let reduce_only1maxcliq ecc =
   let rec loop ecc restorer =
-    if PSQueue.is_empty ecc.cache
+    if k_used_up ecc || PSQueue.is_empty ecc.cache
     then ecc, restorer
     else
       let (i, j), (neighbors, num_neigbors), score = PSQueue.top ecc.cache in
