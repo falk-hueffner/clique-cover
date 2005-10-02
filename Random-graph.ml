@@ -1,11 +1,17 @@
 let () =
-  if Array.length Sys.argv <> 3
+  if Array.length Sys.argv < 2 || Array.length Sys.argv > 3
   then begin
     Printf.eprintf "usage: %s vertices edge-probability\n" Sys.argv.(0);
     exit 1;
   end;
-  let n = int_of_string   Sys.argv.(1) in
-  let p = float_of_string Sys.argv.(2) in
+  let n = int_of_string Sys.argv.(1) in
+  let p =
+    if  Array.length Sys.argv = 3
+    then float_of_string Sys.argv.(2)
+    else
+      let n = float_of_int n in
+	(n *. log n) /. ((n *. (n -. 1.0) /. 2.0))
+  in
   Random.self_init ();
   let g =
     Util.fold_n
