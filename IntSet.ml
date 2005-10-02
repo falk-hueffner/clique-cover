@@ -27,6 +27,8 @@ let for_all p s = S.for_all p s;;
 let fold f s accu = S.fold (fun i accu -> f accu i) s accu;;
 let iter = S.iter;;
 
+let of_list = List.fold_left add empty;;
+
 exception Got_it;;
 let find_opt p s =
   let it = ref None in
