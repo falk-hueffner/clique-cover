@@ -1,4 +1,4 @@
-EXEC	  = ecc
+EXECS	  = ecc random-graph
 
 SOURCES   = \
 	Util.ml		\
@@ -10,8 +10,7 @@ SOURCES   = \
 	ECC.ml		\
 	Branch.ml	\
 	KSW.ml		\
-	Test.ml		\
-	Main.ml
+	Test.ml
 
 C_SOURCES = \
 
@@ -31,7 +30,7 @@ CFLAGS	 += -O3 $(shell gcc-arch) $(PROFILE) -funroll-all-loops -ffast-math
 CFLAGS	 += -W -Wall -Wno-unused -Werror
 #CFLAGS	 += -DNDEBUG
 
-all: depend $(EXEC) doc/index.html
+all: depend $(EXECS) doc/index.html
 
 OBJS = $(SOURCES:.ml=.cmx)
 DBG_OBJS = $(SOURCES:.ml=.cmo)
@@ -39,11 +38,14 @@ C_OBJS = $(C_SOURCES:.c=.o)
 MLIS := $(wildcard *.mli)
 DBG_LIBS = $(LIBS:.cmxa=.cma)
 
-ecc: $(OBJS) $(C_OBJS)
+ecc: $(OBJS) Main.cmx
 	$(OCAMLOPT) $(PROFILE) -o $@ $(LIBS) $^
 
-ecc-dbg: $(DBG_OBJS) $(C_OBJS)
+ecc-dbg: $(DBG_OBJS) Main.cmo $(C_OBJS)
 	$(OCAMLC) $(PROFILE) -o $@ $(DBG_LIBS) $^
+
+random-graph: $(OBJS) Random-graph.cmx
+	$(OCAMLOPT) $(PROFILE) -o $@ $(LIBS) $^
 
 doc/index.html: $(MLIS)
 	mkdir -p doc
@@ -61,7 +63,7 @@ doc/index.html: $(MLIS)
 	$(OCAMLOPT) $(PROFILE) -c $<
 
 clean:
-	rm -f $(EXEC) $(EXEC)-dbg core gmon.out
+	rm -f $(EXECS) ecc-dbg core gmon.out
 	rm -f *.cm[iox] *.o $(PROJ)
 
 realclean: clean
