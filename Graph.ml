@@ -19,6 +19,12 @@ let choose_edge g =
     i, IntSet.choose neighbors
 ;;
 
+let add_vertex g i =
+  if IntMap.has_key g i
+  then g
+  else IntMap.add g i IntSet.empty
+;;
+
 let connect g i j =
   assert (i <> j);
   let neighbors_i = neighbors' g i in
@@ -66,6 +72,14 @@ let clear_subgraph g vs =
   IntSet.fold
     (fun g' v ->
        IntMap.add g' v (IntSet.minus (neighbors g v) vs))
+    vs
+    g
+;;
+
+let complete_subgraph g vs =
+  IntSet.fold
+    (fun g' v ->
+       IntMap.add g' v (IntSet.union (neighbors g v) (IntSet.remove vs v)))
     vs
     g
 ;;

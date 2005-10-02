@@ -18,6 +18,7 @@ val is_deg0 : t -> int -> bool
 val is_clique : t -> bool
 val choose_edge : t -> int * int
 
+val add_vertex : t -> int -> t
 val connect : t -> int -> int -> t
 (** [connect g v w] connects vertices [v] and [w] in [g]. Takes O(log n) time.  *)
 
@@ -27,6 +28,7 @@ val delete_vertex : t -> int -> t
   
 val subgraph : t -> IntSet.t -> t
 val clear_subgraph : t -> IntSet.t -> t
+val complete_subgraph : t -> IntSet.t -> t
 
 val find_edge_opt : (int -> int -> 'a option) -> t -> 'a option
 
