@@ -1,7 +1,5 @@
 type 'a t
 
-exception Empty
-
 val empty : 'a t
     
 val add : 'a t -> int -> 'a -> int -> 'a t
