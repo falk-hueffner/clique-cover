@@ -39,8 +39,6 @@ val fold_edges : ('a -> int -> int -> 'a) -> t -> 'a -> 'a
 val iter_edges : (int -> int -> unit) -> t -> unit
 (** [iter_edges f g] calls [f u v] for each edge [(u, v)] in [g].  *)
 
-val map : (int -> IntSet.t -> IntSet.t) -> t -> t
-
 val complement : t -> t
 
 val output : out_channel -> t -> unit

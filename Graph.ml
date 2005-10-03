@@ -10,7 +10,7 @@ let make_clique k =
 let has_vertex g i = IntMap.has_key g i;;
 
 let neighbors g i = IntMap.get g i;;
-let neighbors' g i = try neighbors g i with Not_found -> IntSet.empty;;
+let neighbors' g i = IntMap.get_default g i IntSet.empty;;
 
 let choose_edge g =
   let i, neighbors =
@@ -63,7 +63,7 @@ let is_connected g i j = IntSet.contains (IntMap.get g i) j;;
 let subgraph g vs =
   IntSet.fold
     (fun g' v ->
-      IntMap.add g' v (IntSet.intersection (neighbors g v) vs))
+       IntMap.add g' v (IntSet.intersection (neighbors g v) vs))
     vs
     empty
 ;;
@@ -101,10 +101,9 @@ let is_deg0 g v = IntSet.is_empty (neighbors g v);;
 
 let is_clique g =
   let d = (num_vertices g) - 1 in
-    fold_vertices
-      (fun is_clique _ n -> is_clique && IntSet.size n = d)
+    IntMap.for_all
+      (fun _ neighbors -> IntSet.size neighbors = d)
       g
-      true
 ;;
 
 let fold_neighbors f g i accu = IntSet.fold f (neighbors g i) accu;;
@@ -122,16 +121,22 @@ let fold_edges f g accu =
 
 let iter_edges f g = fold_edges (fun () i j -> f i j) g ();;
 
-let map = IntMap.map;;
+let num_vertices = IntMap.size;;
 
-let num_vertices g = fold_vertices (fun n _ _ -> n + 1) g 0;;
-let num_edges g = fold_edges (fun n _ _ -> n + 1) g 0;;
+let num_edges g =
+  let num =
+    fold_vertices
+      (fun num _ neighbors -> num + IntSet.size neighbors) g 0
+  in
+    assert (num mod 2 = 0);
+    num / 2
+;;
 
 let complement g =
   let vertices = vertices g
   in
-    map (fun i neighbors ->
-          IntSet.remove (IntSet.minus vertices neighbors) i) g
+    IntMap.map (fun i neighbors ->
+		  IntSet.remove (IntSet.minus vertices neighbors) i) g
 ;;
 
 let output channel g =
@@ -145,4 +150,3 @@ let output channel g =
 
 let print g = output stdout g;;
 let dump g = output stderr g;;
-
