@@ -4,7 +4,7 @@ type t = {
   k:	     int;
   max_k:     int;
   (* Caches  *)
-  cache:     (IntSet.t * int) PSQueue.t;
+  cache:     IntSet.t PSQueue.t;
 };;
 
 let use_rule1        = ref true;;
@@ -58,20 +58,18 @@ let edge_score g i j =
   let num_clique_edges = (num_neigbors * (num_neigbors - 1)) / 2 in
   let num_actual_edges = Graph.num_edges_in_subgraph g neighbors in
   let score = num_clique_edges - num_actual_edges in
-    neighbors, num_neigbors, score
+    neighbors, score
 ;;
 
 let verify_cache ecc =
   PSQueue.fold
-    (fun () (i, j) (neighbors, num_neigbors) score ->
-       let neighbors', num_neigbors', score' = edge_score ecc.g i j in
+    (fun () (i, j) neighbors score ->
+       let neighbors', score' = edge_score ecc.g i j in
 	 if not (Graph.is_connected ecc.uncovered i j)
 	 then Printf.eprintf "bogus edge %d %d\n%!" i j;
 	 if not (IntSet.equal neighbors neighbors')
 	 then Printf.eprintf "bogus neighbor set for %d %d: %a, should be %a\n%!"
 	   i j IntSet.output neighbors IntSet.output neighbors';
-	 if num_neigbors <>  num_neigbors'
-	 then Printf.eprintf "bogus neighbor set size for %d %d\n%!" i j;
 	 if score <> score'
 	 then Printf.eprintf "bogus score for %d %d\n%!" i j)
     ecc.cache
@@ -91,12 +89,13 @@ let del_vertex ecc i =
   let cache =
     Graph.fold_edges
       (fun cache j k ->
-	 let (neighbors, num_neigbors), score = PSQueue.get cache (j, k) in
+	 let neighbors, score = PSQueue.get cache (j, k) in
 	 let neighbors' = IntSet.remove neighbors i in
+	 let num_neigbors = IntSet.size neighbors in
 	 let num_neigbors' = num_neigbors - 1 in
 	 let score' = score - num_neigbors'
 	   + IntSet.intersection_size neighbors_i neighbors' in
-	   PSQueue.add cache (j, k) (neighbors', num_neigbors') score')
+	   PSQueue.add cache (j, k) neighbors' score')
       (Graph.subgraph ecc.uncovered neighbors_i)
       cache
   in
@@ -125,7 +124,7 @@ let reduce_only1maxcliq ecc =
     if k_used_up ecc || PSQueue.is_empty ecc.cache
     then ecc, restorer
     else
-      let (i, j), (neighbors, num_neigbors), score = PSQueue.top ecc.cache in
+      let (i, j), neighbors, score = PSQueue.top ecc.cache in
 	if score > 0
 	then ecc, restorer
 	else begin
@@ -173,8 +172,8 @@ let make g =
     Graph.fold_edges
       (fun cache i j ->
 	 assert (i < j);
-	 let neighbors, num_neigbors, score = edge_score g i j in
-	   PSQueue.add cache (i, j) (neighbors, num_neigbors) score)
+	 let neighbors, score = edge_score g i j in
+	   PSQueue.add cache (i, j) neighbors score)
       g
       PSQueue.empty
   in
