@@ -25,8 +25,17 @@ let all_covered ecc = PSQueue.is_empty ecc.cache;;
 let set_max_k ecc max_k = { ecc with max_k = max_k };;
 
 let identity x = x;;
-
 let (@@) f g = fun x -> f (g x);;
+
+let pack i j =
+  assert (i >= 0 && i < 1 lsl 14);
+  assert (j >= 0 && j < 1 lsl 14);
+  let i, j = if i < j then i, j else j, i in
+    i lor (j lsl 15)
+;;
+let unpack x =
+  x land ((1 lsl 15) - 1), x lsr 15
+;;
 
 let do_cover ecc clique =
   assert (not (k_used_up ecc));
@@ -37,7 +46,7 @@ let do_cover ecc clique =
 	 IntSet.fold
 	   (fun cache j ->	      
 	      if i < j
-	      then PSQueue.remove cache (i, j)
+	      then PSQueue.remove cache (pack i j)
 	      else cache)
 	   clique
 	   cache)
@@ -63,7 +72,8 @@ let edge_score g i j =
 
 let verify_cache ecc =
   PSQueue.fold
-    (fun () (i, j) neighbors score ->
+    (fun () edge neighbors score ->
+       let i, j = unpack edge in
        let neighbors', score' = edge_score ecc.g i j in
 	 if not (Graph.is_connected ecc.uncovered i j)
 	 then Printf.eprintf "bogus edge %d %d\n%!" i j;
@@ -82,20 +92,20 @@ let del_vertex ecc i =
   let neighbors_i = Graph.neighbors ecc.g i in
   let cache =
     Graph.fold_neighbors
-      (fun cache j -> PSQueue.remove cache (i, j))
+      (fun cache j -> PSQueue.remove cache (pack i j))
       ecc.uncovered
       i
       ecc.cache in
   let cache =
     Graph.fold_edges
       (fun cache j k ->
-	 let neighbors, score = PSQueue.get cache (j, k) in
+	 let neighbors, score = PSQueue.get cache (pack j k) in
 	 let neighbors' = IntSet.remove neighbors i in
 	 let num_neigbors = IntSet.size neighbors in
 	 let num_neigbors' = num_neigbors - 1 in
 	 let score' = score - num_neigbors'
 	   + IntSet.intersection_size neighbors_i neighbors' in
-	   PSQueue.add cache (j, k) neighbors' score')
+	   PSQueue.add cache (pack j k) neighbors' score')
       (Graph.subgraph ecc.uncovered neighbors_i)
       cache
   in
@@ -124,7 +134,8 @@ let reduce_only1maxcliq ecc =
     if k_used_up ecc || PSQueue.is_empty ecc.cache
     then ecc, restorer
     else
-      let (i, j), neighbors, score = PSQueue.top ecc.cache in
+      let edge, neighbors, score = PSQueue.top ecc.cache in
+      let i, j = unpack edge in
 	if score > 0
 	then ecc, restorer
 	else begin
@@ -173,7 +184,7 @@ let make g =
       (fun cache i j ->
 	 assert (i < j);
 	 let neighbors, score = edge_score g i j in
-	   PSQueue.add cache (i, j) neighbors score)
+	   PSQueue.add cache (pack i j) neighbors score)
       g
       PSQueue.empty
   in
@@ -192,9 +203,9 @@ let make g =
 ;;
 
 let branching_edge ecc =
-  let (i, j), _, score = PSQueue.top ecc.cache in
+  let edge, _, score = PSQueue.top ecc.cache in
     (*     Printf.eprintf "selecting edge %d %d with score %d\n%!" i j score; *)
-    (i, j)
+    unpack edge
 ;;
 
 let cover ecc clique =

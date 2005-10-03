@@ -1,14 +1,12 @@
-module M = Map.Make(struct type t = int * int let compare = compare end);;
+module M = Map.Make(struct type t = int let compare = compare end);;
 
 type 'a t = ('a * int) M.t;;
-
-type key = int * int;;
 
 exception Empty;;
 
 let empty = M.empty;;
 
-let add (q:'a t) k v (p:int) = M.add k (v, p) q;;
+let add q k v p = M.add k (v, p) q;;
 
 let is_empty q = M.is_empty q;;
 
