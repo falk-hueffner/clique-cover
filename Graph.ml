@@ -85,7 +85,6 @@ let complete_subgraph g vs =
 ;;
 
 let fold_vertices f g x = IntMap.fold f g x;;
-let fold_vertices_inorder f g x = IntMap.fold_inorder f g x;;
 let iter_vertices f g = fold_vertices (fun () i neighbors -> f i neighbors) g ();;
 
 let vertices g =
@@ -133,13 +132,6 @@ let complement g =
   in
     map (fun i neighbors ->
           IntSet.remove (IntSet.minus vertices neighbors) i) g
-;;
-
-let find_edge_opt p g =
-  IntMap.find_opt
-    (fun i neighbors ->
-      IntSet.find_opt (fun j -> p i j) neighbors)
-    g
 ;;
 
 let output channel g =

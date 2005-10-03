@@ -1,5 +1,5 @@
 let ecc_heuristic g =
-  Graph.fold_vertices_inorder
+  Graph.fold_vertices
     (fun cliques i i_neighbors ->
        let (w, present, _) = IntSet.split i_neighbors i in
 	 assert (not present);

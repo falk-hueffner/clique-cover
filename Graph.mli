@@ -30,10 +30,7 @@ val subgraph : t -> IntSet.t -> t
 val clear_subgraph : t -> IntSet.t -> t
 val complete_subgraph : t -> IntSet.t -> t
 
-val find_edge_opt : (int -> int -> 'a option) -> t -> 'a option
-
 val fold_vertices : ('a -> int -> IntSet.t -> 'a) -> t -> 'a -> 'a
-val fold_vertices_inorder : ('a -> int -> IntSet.t -> 'a) -> t -> 'a -> 'a
 
 val fold_neighbors : ('a -> int -> 'a) -> t -> int -> 'a -> 'a
 
