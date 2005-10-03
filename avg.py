@@ -61,10 +61,10 @@ for c in range(0, k):
     else:
         #print "%f" % (avgs[c]),
         if avgs[c] > 100:
-            digits = 0
-        elif avgs[c] > 10:
-            digits = 1
-        else:
             digits = 2
+        elif avgs[c] > 10:
+            digits = 3
+        else:
+            digits = 4
             
         print ("%" + `cols[c]` + "." + `digits` + "f") % avgs[c],
