@@ -29,6 +29,7 @@ val delete_vertex : t -> int -> t
 val subgraph : t -> IntSet.t -> t
 val clear_subgraph : t -> IntSet.t -> t
 val complete_subgraph : t -> IntSet.t -> t
+val num_edges_in_subgraph : t -> IntSet.t -> int
 
 val fold_vertices : ('a -> int -> IntSet.t -> 'a) -> t -> 'a -> 'a
 

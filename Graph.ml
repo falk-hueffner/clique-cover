@@ -84,6 +84,18 @@ let complete_subgraph g vs =
     g
 ;;
 
+let num_edges_in_subgraph g vs =
+  let num =
+    IntSet.fold
+      (fun num v ->
+        num + (IntSet.intersection_size (neighbors g v) vs))
+      vs
+      0
+  in
+    assert (num mod 2 = 0);
+    num / 2
+;;
+
 let fold_vertices f g x = IntMap.fold f g x;;
 let iter_vertices f g = fold_vertices (fun () i neighbors -> f i neighbors) g ();;
 

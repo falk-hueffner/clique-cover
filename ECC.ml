@@ -56,7 +56,7 @@ let edge_score g i j =
       (Graph.neighbors g j) in
   let num_neigbors = IntSet.size neighbors in
   let num_clique_edges = (num_neigbors * (num_neigbors - 1)) / 2 in
-  let num_actual_edges = Graph.num_edges (Graph.subgraph g neighbors) in
+  let num_actual_edges = Graph.num_edges_in_subgraph g neighbors in
   let score = num_clique_edges - num_actual_edges in
     neighbors, num_neigbors, score
 ;;
