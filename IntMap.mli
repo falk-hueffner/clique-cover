@@ -6,12 +6,16 @@ type 'a t
 val empty : 'a t
 (** The empty map.  *)
 
+val is_empty : 'a t -> bool
+
 val size : 'a t -> int
 (** Returns the number of elements of a set (O(1)).  *)
 
 val has_key : 'a t -> int -> bool
 (** [has_key m i] returns true if there is a mapping [(i, x)] in [m]
     (O(log n)).  *)
+
+val max_key : 'a t -> int
 
 val get : 'a t -> int -> 'a
 (** [get m i] returns the current binding of [i] in [m], or raises

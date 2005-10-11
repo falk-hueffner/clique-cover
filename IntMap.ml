@@ -6,6 +6,8 @@ type 'a t =
 
 let empty = Empty;;
 
+let is_empty s = s = Empty;;
+
 let size = function
     Empty -> 0
   | Leaf _ -> 1
@@ -19,6 +21,12 @@ let rec has_key s i = match s with
       if i <= p
       then has_key l i
       else has_key r i
+;;
+
+let rec max_key s = match s with
+    Empty -> raise Not_found
+  | Leaf (i, _) -> i
+  | Branch (_, _, _, _, r) -> max_key r
 ;;
 
 let rec get s i = match s with
@@ -70,7 +78,7 @@ let branch p m l r = Branch (p, m, size l + size r, l, r);;
 let rec add s i x = match s with
     Empty -> Leaf (i, x)
   | Leaf (j, _) when j = i -> Leaf (i, x)
-  | Leaf (j, y) -> join 1 i (Leaf (i, x)) j s 2
+  | Leaf (j, _) -> join 1 i (Leaf (i, x)) j s 2
   | Branch (p, m, c, l, r) ->
       if prefix_matches i p m then
 	if i <= p
