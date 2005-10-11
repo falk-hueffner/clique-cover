@@ -226,6 +226,22 @@ let rec intersection_size s1 s2 = match s1, s2 with
 	0
 ;;
 
+let rec fold_intersection f s1 s2 accu = match s1, s2 with
+    Empty, _
+  | _, Empty -> accu
+  | Leaf i, _ -> if contains s2 i then f accu i else accu
+  | _, Leaf i -> if contains s1 i then f accu i else accu
+  | Branch (p1, m1, _, l1, r1), Branch (p2, m2, _, l2, r2) ->
+      if m1 = m2 && p1 = p2 then
+	fold_intersection f l1 l2 (fold_intersection f r1 r2 accu)
+      else if m1 > m2 && prefix_matches p2 p1 m1 then
+	fold_intersection f (if p2 <= p1 then l1 else r1) s2 accu
+      else if m1 < m2 && prefix_matches p1 p2 m2 then
+        fold_intersection f s1 (if p1 <= p2 then l2 else r2) accu
+      else
+	accu
+;;
+
 let rec find_opt p = function
     Empty -> None
   | Leaf i -> p i

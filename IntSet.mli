@@ -85,6 +85,7 @@ val find : (int -> bool) -> t -> int
 val for_all : (int -> bool) -> t -> bool
 
 val fold : ('a -> int -> 'a) -> t -> 'a -> 'a
+val fold_intersection : ('a -> int -> 'a) -> t -> t -> 'a -> 'a
 val iter : (int -> unit) -> t -> unit
 
 val output : out_channel -> t -> unit
