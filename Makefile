@@ -19,7 +19,7 @@ INCLUDES  = #-I extlib-dev
 LIBS	  = unix.cmxa
 
 CC	  = gcc
-OCAMLC    = ocamlc -g -w A -warn-error A $(INCLUDES)
+OCAMLC    = ocamlc -g -warn-error A $(INCLUDES)
 OCAMLOPT  = ocamlopt -inline 10000000 -warn-error A $(INCLUDES)
 OCAMLDEP  = ocamldep $(INCLUDES)
 
