@@ -25,6 +25,8 @@ let add_vertex g i =
   else IntMap.add g i IntSet.empty
 ;;
 
+let new_vertex g = (IntMap.max_key g) + 1;;
+
 let connect g i j =
   assert (i <> j);
   let neighbors_i = neighbors' g i in
@@ -66,6 +68,18 @@ let subgraph g vs =
        IntMap.add g' v (IntSet.intersection (neighbors g v) vs))
     vs
     empty
+;;
+
+let fold_subgraph_edges f g vs accu =
+  IntSet.fold
+    (fun accu i ->
+       IntSet.fold_intersection
+	 (fun accu j -> if i < j then f accu i j else accu)
+	 (neighbors g i)
+	 vs
+	 accu)
+    vs
+    accu
 ;;
 
 let clear_subgraph g vs =

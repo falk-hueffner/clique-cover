@@ -19,6 +19,7 @@ val is_clique : t -> bool
 val choose_edge : t -> int * int
 
 val add_vertex : t -> int -> t
+val new_vertex : t -> int
 val connect : t -> int -> int -> t
 (** [connect g v w] connects vertices [v] and [w] in [g]. Takes O(log n) time.  *)
 
@@ -32,10 +33,9 @@ val complete_subgraph : t -> IntSet.t -> t
 val num_edges_in_subgraph : t -> IntSet.t -> int
 
 val fold_vertices : ('a -> int -> IntSet.t -> 'a) -> t -> 'a -> 'a
-
 val fold_neighbors : ('a -> int -> 'a) -> t -> int -> 'a -> 'a
-
 val fold_edges : ('a -> int -> int -> 'a) -> t -> 'a -> 'a
+val fold_subgraph_edges : ('a -> int -> int -> 'a) -> t -> IntSet.t -> 'a -> 'a
 
 val iter_edges : (int -> int -> unit) -> t -> unit
 (** [iter_edges f g] calls [f u v] for each edge [(u, v)] in [g].  *)
