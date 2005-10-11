@@ -97,7 +97,7 @@ let del_vertex ecc i =
       i
       ecc.cache in
   let cache =
-    Graph.fold_edges
+    Graph.fold_subgraph_edges
       (fun cache j k ->
 	 let neighbors, score = PSQueue.get cache (pack j k) in
 	 let neighbors' = IntSet.remove neighbors i in
@@ -106,7 +106,7 @@ let del_vertex ecc i =
 	 let score' = score - num_neigbors'
 	   + IntSet.intersection_size neighbors_i neighbors' in
 	   PSQueue.add cache (pack j k) neighbors' score')
-      (Graph.subgraph ecc.uncovered neighbors_i)
+      ecc.uncovered neighbors_i
       cache
   in
     { ecc with g = g; uncovered = uncovered; cache = cache }
