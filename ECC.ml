@@ -3,7 +3,6 @@ type t = {
   uncovered: Graph.t;
   k:	     int;
   max_k:     int;
-  (* Caches  *)
   cache:     IntSet.t PSQueue.t;
 };;
 
@@ -187,34 +186,36 @@ let rec aerate ecc vertices =
     let i_neighbors = Graph.neighbors ecc.g i in
     let i_neighbors_uncovered = Graph.neighbors ecc.uncovered i in
     let vertices = IntSet.remove vertices i in
-    let colors =
+    let colors, num_colors =
       Graph.fold_neighbors
-	(fun colors j ->
+	(fun (colors, num_colors) j ->
 	   if IntMap.has_key colors j 
-	   then colors
+	   then colors, num_colors
 	   else
-	     let color =
-	       if IntMap.is_empty colors then 0
-	       else (IntMap.max_key colors) + 1 in
+	     let color = num_colors in
 	     let rec paint colors k =
 	       if IntMap.has_key colors k
 	       then colors
 	       else
 		 let colors = IntMap.add colors k color in
-		   IntSet.fold
+		   IntSet.fold		(* fold_intersection *)
                      (fun colors l -> paint colors l)
 		     (IntSet.intersection (Graph.neighbors ecc.g k) i_neighbors)
 		     colors
              in
-               paint colors j)
+               paint colors j, num_colors + 1)
 	ecc.g
 	i
-	IntMap.empty in
-    let num_colors = IntMap.max_key colors
+	(IntMap.empty, 0)
     in
-      if num_colors = 1
+      if num_colors <= 1
       then aerate ecc vertices
       else begin
+(*	Printf.printf "aerate %d %a %a %a\n"
+	  i
+	  IntSet.output i_neighbors
+	  Graph.output (Graph.subgraph ecc.g  i_neighbors)
+	  (IntMap.output Util.output_int) colors; *)
 	Util.int64_incr rule4_counter;
 	let new_vertices_start = Graph.new_vertex ecc.g in
 	let new_vertex color = new_vertices_start + color in
@@ -224,7 +225,9 @@ let rec aerate ecc vertices =
 	let g =
 	  IntSet.fold (fun g j -> Graph.connect g j (new_neighbor j)) i_neighbors g in
 	let uncovered =
-	  IntSet.fold (fun g j -> Graph.connect g j (new_neighbor j)) i_neighbors uncovered in
+	  Util.fold_n (fun g j -> Graph.add_vertex g (new_vertex j)) num_colors uncovered in
+	let uncovered =
+	  IntSet.fold (fun g j -> Graph.connect g j (new_neighbor j)) i_neighbors_uncovered uncovered in
 	let cache =
 	  IntSet.fold
 	    (fun cache j ->
