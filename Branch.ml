@@ -6,7 +6,7 @@ let branch_calls = ref 0L;;
 let rec branch ecc depth =
   branch_calls := Int64.succ !branch_calls;
   if ECC.all_covered ecc
-  then Some []
+  then Some (ECC.restore ecc [])
   else if ECC.k_used_up ecc
   then None
   else
@@ -25,9 +25,7 @@ let rec branch ecc depth =
       Util.list_find_opt
 	(fun clique ->
 	   let ecc = ECC.cover ecc clique in
-	     match branch ecc (depth + 1)  with
-		 None -> None
-	       | Some cover -> Some (ECC.restore ecc cover))
+	     branch ecc (depth + 1))
 	cliques
 ;;
 

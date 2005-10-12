@@ -27,7 +27,6 @@ let all_covered ecc = PSQueue.is_empty ecc.cache;;
 
 let set_max_k ecc max_k = { ecc with max_k = max_k };;
 
-let identity x = x;;
 let (@@) f g = fun x -> f (g x);;
 
 let pack i j =
@@ -280,7 +279,7 @@ let make g =
       k         = 0;
       max_k     = 0;
       cache     = cache;
-      restorer  = identity; } in
+      restorer  = fun cliques -> cliques; } in
     let ecc = reduce_only1maxcliq ecc in
     let ecc = reduce_deg0vertices ecc (Graph.vertices ecc.g) in
 (*     let ecc = prison_reduce ecc (Graph.vertices ecc.g) in *)
