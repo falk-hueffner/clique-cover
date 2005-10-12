@@ -4,6 +4,7 @@ type t = {
   k:	     int;
   max_k:     int;
   cache:     IntSet.t PSQueue.t;
+  restorer:  IntSet.t list -> IntSet.t list;
 };;
 
 let use_rule1        = ref true;;
@@ -20,6 +21,7 @@ let g ecc = ecc.g;;
 let k ecc = ecc.k;;
 let uncovered ecc = ecc.uncovered;;
 let k_used_up ecc = ecc.k >= ecc.max_k;;
+let restore ecc cliques = ecc.restorer cliques;;
 
 let all_covered ecc = PSQueue.is_empty ecc.cache;;
 
@@ -36,27 +38,6 @@ let pack i j =
 ;;
 let unpack x =
   x land ((1 lsl 15) - 1), x lsr 15
-;;
-
-let do_cover ecc clique =
-  assert (not (k_used_up ecc));
-  let uncovered = Graph.clear_subgraph ecc.uncovered clique in
-  let cache =
-    IntSet.fold
-      (fun cache i ->
-	 IntSet.fold
-	   (fun cache j ->	      
-	      if i < j
-	      then PSQueue.remove cache (pack i j)
-	      else cache)
-	   clique
-	   cache)
-      clique
-      ecc.cache in
-  let ecc =
-    { ecc with uncovered = uncovered; k = ecc.k + 1; cache = cache }
-  in
-    ecc, (fun cliques -> clique :: cliques)
 ;;
 
 let edge_score g i j =
@@ -85,6 +66,28 @@ let verify_cache ecc =
 	 then Printf.eprintf "bogus score for %d %d\n%!" i j)
     ecc.cache
     ()
+;;
+
+let do_cover ecc clique =
+  assert (not (k_used_up ecc));
+  let cache =
+    IntSet.fold
+      (fun cache i ->
+	 IntSet.fold
+	   (fun cache j ->	      
+	      if i < j
+	      then PSQueue.remove cache (pack i j)
+	      else cache)
+	   clique
+	   cache)
+      clique
+      ecc.cache
+  in
+    { ecc with
+	uncovered = Graph.clear_subgraph ecc.uncovered clique;
+	k = ecc.k + 1;
+	cache = cache;
+	restorer = ecc.restorer @@ (fun cliques -> clique :: cliques) }
 ;;
 
 let del_vertex ecc i =
@@ -130,24 +133,23 @@ let reduce_deg0vertices ecc vertices =
 ;;
 
 let reduce_only1maxcliq ecc =
-  if not !use_rule2 then ecc, identity else
-  let rec loop ecc restorer =
+  if not !use_rule2 then ecc else
+  let rec loop ecc =
     if k_used_up ecc || PSQueue.is_empty ecc.cache
-    then ecc, restorer
+    then ecc
     else
       let edge, neighbors, score = PSQueue.top ecc.cache in
       let i, j = unpack edge in
 	if score > 0
-	then ecc, restorer
+	then ecc
 	else begin
 	  Util.int64_incr rule2_counter;
 	  let clique = IntSet.add neighbors i in
 	  let clique = IntSet.add clique j in
-	  let ecc, restorer' = do_cover ecc clique in
-	    loop ecc (restorer @@ restorer')
+	    loop (do_cover ecc clique)
 	end
   in
-    loop ecc identity
+    loop ecc
 ;;
 
 let rec prison_reduce ecc vertices =
@@ -180,7 +182,7 @@ let rec prison_reduce ecc vertices =
 
 let rec aerate ecc vertices =
   if not !use_rule4 || k_used_up ecc || IntSet.is_empty vertices
-  then ecc, identity
+  then ecc
   else
     let i = IntSet.choose vertices in
     let i_neighbors = Graph.neighbors ecc.g i in
@@ -256,10 +258,8 @@ let rec aerate ecc vertices =
 		       IntSet.add s j)
 		  clique
 		  IntSet.empty)) in		 
-	let ecc = { ecc with g = g; uncovered = uncovered; cache = cache }
-	in
-	  verify_cache ecc;
-	  ecc, restorer
+	{ ecc with g = g; uncovered = uncovered; cache = cache;
+	    restorer = ecc.restorer @@ restorer }
       end
 
 let make g =
@@ -279,12 +279,13 @@ let make g =
       uncovered = g;
       k         = 0;
       max_k     = 0;
-      cache     = cache; } in
-    let ecc, restorer = reduce_only1maxcliq ecc in
+      cache     = cache;
+      restorer  = identity; } in
+    let ecc = reduce_only1maxcliq ecc in
     let ecc = reduce_deg0vertices ecc (Graph.vertices ecc.g) in
 (*     let ecc = prison_reduce ecc (Graph.vertices ecc.g) in *)
 (*       Printf.printf "reduced to k = %d\n" ecc.k; *)
-      ecc, restorer
+      ecc
 ;;
 
 let branching_edge ecc =
@@ -294,13 +295,11 @@ let branching_edge ecc =
 ;;
 
 let cover ecc clique =
-  let ecc, restorer = do_cover ecc clique in
-  let ecc, restorer' = reduce_only1maxcliq ecc in
-  let restorer = restorer @@ restorer' in
+  let ecc = do_cover ecc clique in
+  let ecc = reduce_only1maxcliq ecc in
   let ecc = reduce_deg0vertices ecc clique in
   let ecc = prison_reduce ecc (Graph.vertices ecc.g) in
-  let ecc, restorer' = aerate ecc (Graph.vertices ecc.g) in
-  let restorer = restorer @@ restorer' in
-(*     verify_cache ecc; *)
-    ecc, restorer
+  let ecc = aerate ecc (Graph.vertices ecc.g) in
+    verify_cache ecc;
+    ecc;
 ;;

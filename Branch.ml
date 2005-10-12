@@ -24,15 +24,15 @@ let rec branch ecc depth =
 (*     Printf.eprintf " -> %a\n%!" (Util.output_list IntSet.output) cliques; *)
       Util.list_find_opt
 	(fun clique ->
-	   let ecc, restorer = ECC.cover ecc clique in
+	   let ecc = ECC.cover ecc clique in
 	     match branch ecc (depth + 1)  with
 		 None -> None
-	       | Some cover -> Some (restorer cover))
+	       | Some cover -> Some (ECC.restore ecc cover))
 	cliques
 ;;
 
 let ecc_solve g =
-  let ecc, restorer = ECC.make g in
+  let ecc = ECC.make g in
   let rec loop k =
     let ecc = ECC.set_max_k ecc k in
       if !Util.verbose then Printf.eprintf "*** k = %d ***\n%!" k;
@@ -40,5 +40,5 @@ let ecc_solve g =
           None -> loop (k + 1)
 	| Some cliques -> cliques
   in
-    restorer (loop (ECC.k ecc))
+    loop (ECC.k ecc)
 ;;
