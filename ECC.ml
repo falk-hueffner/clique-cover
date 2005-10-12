@@ -299,6 +299,6 @@ let cover ecc clique =
   let ecc = reduce_deg0vertices ecc clique in
   let ecc = prison_reduce ecc (Graph.vertices ecc.g) in
   let ecc = aerate ecc (Graph.vertices ecc.g) in
-    verify_cache ecc;
+(*     verify_cache ecc; *)
     ecc;
 ;;
