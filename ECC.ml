@@ -120,7 +120,7 @@ let del_vertex ecc i =
   
 (* Reduce vertices adjacent to no uncovered edge. Restrict search to
    VERTICES. *)
-let reduce_deg0vertices ecc vertices =
+let reduce_rule1 ecc vertices =
   if not !use_rule1 then ecc else
   IntSet.fold
     (fun ecc i ->
@@ -134,7 +134,7 @@ let reduce_deg0vertices ecc vertices =
     ecc
 ;;
 
-let reduce_only1maxcliq ecc =
+let reduce_rule2 ecc =
   if not !use_rule2 then ecc else
   let rec loop ecc =
     if k_used_up ecc || PSQueue.is_empty ecc.cache
@@ -154,7 +154,7 @@ let reduce_only1maxcliq ecc =
     loop ecc
 ;;
 
-let rec prison_reduce ecc vertices =
+let rec reduce_rule3 ecc vertices =
   if not !use_rule3 then ecc else
   if k_used_up ecc || IntSet.is_empty vertices
   then ecc
@@ -174,15 +174,15 @@ let rec prison_reduce ecc vertices =
       if not(IntSet.for_all
 	       (fun x -> IntSet.do_intersect (Graph.neighbors ecc.g x) prisoners)
 	       exits)
-      then prison_reduce ecc vertices
+      then reduce_rule3 ecc vertices
       else begin
 	Util.int64_incr rule3_counter;
 	(* FIXME prepare restorer  *)
-	prison_reduce (del_vertex ecc i) vertices
+	reduce_rule3 (del_vertex ecc i) vertices
       end
 ;;
 
-let rec aerate ecc vertices =
+let rec reduce_rule4 ecc vertices =
   if not !use_rule4 || k_used_up ecc || IntSet.is_empty vertices
   then ecc
   else
@@ -213,7 +213,7 @@ let rec aerate ecc vertices =
 	(IntMap.empty, 0)
     in
       if num_colors <= 1
-      then aerate ecc vertices
+      then reduce_rule4 ecc vertices
       else begin
 (*	Printf.printf "aerate %d %a %a %a\n"
 	  i
@@ -287,9 +287,9 @@ let make g =
       rule1_cand = vertices;
       rule3_cand = vertices;
       rule4_cand = vertices; } in
-    let ecc = reduce_only1maxcliq ecc in
-    let ecc = reduce_deg0vertices ecc (Graph.vertices ecc.g) in
-(*     let ecc = prison_reduce ecc (Graph.vertices ecc.g) in *)
+    let ecc = reduce_rule2 ecc in
+    let ecc = reduce_rule1 ecc (Graph.vertices ecc.g) in
+(*     let ecc = reduce_rule3 ecc (Graph.vertices ecc.g) in *)
 (*       Printf.printf "reduced to k = %d\n" ecc.k; *)
       ecc
 ;;
@@ -302,10 +302,10 @@ let branching_edge ecc =
 
 let cover ecc clique =
   let ecc = do_cover ecc clique in
-  let ecc = reduce_only1maxcliq ecc in
-  let ecc = reduce_deg0vertices ecc clique in
-  let ecc = prison_reduce ecc (Graph.vertices ecc.g) in
-  let ecc = aerate ecc (Graph.vertices ecc.g) in
+  let ecc = reduce_rule2 ecc in
+  let ecc = reduce_rule1 ecc clique in
+  let ecc = reduce_rule3 ecc (Graph.vertices ecc.g) in
+  let ecc = reduce_rule4 ecc (Graph.vertices ecc.g) in
 (*     verify_cache ecc; *)
     ecc;
 ;;
