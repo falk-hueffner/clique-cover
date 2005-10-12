@@ -1,10 +1,13 @@
 type t = {
-  g:	     Graph.t;
-  uncovered: Graph.t;
-  k:	     int;
-  max_k:     int;
-  cache:     IntSet.t PSQueue.t;
-  restorer:  IntSet.t list -> IntSet.t list;
+  g:	      Graph.t;
+  uncovered:  Graph.t;
+  k:	      int;
+  max_k:      int;
+  cache:      IntSet.t PSQueue.t;
+  restorer:   IntSet.t list -> IntSet.t list;
+  rule1_cand: IntSet.t;
+  rule3_cand: IntSet.t;
+  rule4_cand: IntSet.t;  
 };;
 
 let use_rule1        = ref true;;
@@ -273,13 +276,17 @@ let make g =
       PSQueue.empty
   in
     if !Util.verbose then Printf.eprintf "done\n%!";
+    let vertices = Graph.vertices g in
     let ecc = {
-      g         = g;
-      uncovered = g;
-      k         = 0;
-      max_k     = 0;
-      cache     = cache;
-      restorer  = fun cliques -> cliques; } in
+      g          = g;
+      uncovered  = g;
+      k          = 0;
+      max_k      = 0;
+      cache      = cache;
+      restorer   = (fun cliques -> cliques);
+      rule1_cand = vertices;
+      rule3_cand = vertices;
+      rule4_cand = vertices; } in
     let ecc = reduce_only1maxcliq ecc in
     let ecc = reduce_deg0vertices ecc (Graph.vertices ecc.g) in
 (*     let ecc = prison_reduce ecc (Graph.vertices ecc.g) in *)
