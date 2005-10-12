@@ -120,7 +120,7 @@ let del_vertex ecc i =
   
 (* Reduce vertices adjacent to no uncovered edge. Restrict search to
    VERTICES. *)
-let reduce_rule1 ecc vertices =
+let reduce_rule1 ecc =
   if not !use_rule1 then ecc else
   IntSet.fold
     (fun ecc i ->
@@ -130,7 +130,7 @@ let reduce_rule1 ecc vertices =
 	 Util.int64_incr rule1_counter;
 	 del_vertex ecc i
        end)
-    vertices
+    ecc.rule1_cand
     ecc
 ;;
 
@@ -288,7 +288,7 @@ let make g =
       rule3_cand = vertices;
       rule4_cand = vertices; } in
     let ecc = reduce_rule2 ecc in
-    let ecc = reduce_rule1 ecc (Graph.vertices ecc.g) in
+    let ecc = reduce_rule1 ecc in
 (*     let ecc = reduce_rule3 ecc (Graph.vertices ecc.g) in *)
 (*       Printf.printf "reduced to k = %d\n" ecc.k; *)
       ecc
@@ -303,7 +303,8 @@ let branching_edge ecc =
 let cover ecc clique =
   let ecc = do_cover ecc clique in
   let ecc = reduce_rule2 ecc in
-  let ecc = reduce_rule1 ecc clique in
+  let ecc = { ecc with rule1_cand = clique } in
+  let ecc = reduce_rule1 ecc in
   let ecc = reduce_rule3 ecc (Graph.vertices ecc.g) in
   let ecc = reduce_rule4 ecc (Graph.vertices ecc.g) in
 (*     verify_cache ecc; *)
