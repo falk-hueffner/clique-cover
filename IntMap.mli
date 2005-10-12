@@ -41,6 +41,8 @@ val fold : ('a -> int -> 'b -> 'a) -> 'b t -> 'a -> 'a
     ... In] are the keys of all bindings in [m] (in increasing
     order), and [x1 ... xN] are the associated data.  *)
 
+val iter : (int -> 'a -> unit) -> 'a t -> unit
+
 val map : (int -> 'a -> 'b) -> 'a t -> 'b t
 (** [map f m] returns a map with same domain as [m], where the
     associated value [x] of all bindings of [m] has been replaced by the
@@ -55,3 +57,7 @@ val find : (int -> 'a -> bool) -> 'a t -> (int * 'a)
 val for_all : (int -> 'a -> bool) -> 'a t -> bool
 (** [for_all p m] checks whether all bindings of [m] satisfy the
     predicate [p].  *)
+
+val output : (out_channel -> 'a -> unit) -> out_channel -> 'a t -> unit
+val print : (out_channel -> 'a -> unit) -> 'a t -> unit
+val dump : (out_channel -> 'a -> unit) -> 'a t -> unit

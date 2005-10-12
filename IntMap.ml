@@ -123,6 +123,12 @@ let rec fold f s accu = match s with
   | Branch (_, _, _, l, r) -> fold f r (fold f l accu)
 ;;
 
+let rec iter f s = match s with
+    Empty -> ()
+  | Leaf (i, x) -> f i x
+  | Branch (_, _, _, l, r) -> iter f l; iter f r
+;;
+
 let rec map f = function
     Empty -> Empty
   | Leaf (i, x) -> Leaf (i, f i x)
@@ -148,3 +154,12 @@ let rec for_all p = function
   | Leaf (i, x) -> p i x
   | Branch (_, _, _, l, r) -> for_all p l && for_all p r
 ;;
+
+let output printer channel s =
+  Printf.fprintf channel "{[%d] " (size s);
+  iter (fun i x  -> Printf.fprintf channel "%d: %a; " i printer x) s;
+  Printf.fprintf channel "}";
+;;
+
+let print printer s = output printer stdout s;;
+let dump  printer s = output printer stderr s;;
