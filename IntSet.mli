@@ -29,7 +29,7 @@ val contains : t -> int -> bool
 val is_subset : t -> t -> bool
 (** [subset s1 s2] tests whether the set [s1] is a subset of the set [s2].  *)
 
-val choose: t -> int
+val choose : t -> int
 (** Return one element of the given set, or raise [Not_found] if the set
     is empty.  *)
 
@@ -41,6 +41,7 @@ val remove : t -> int -> t
 (** [remove x s] returns a set containing all elements of [s] except
     [x]. If [x] is not in [s], [s] is returned unchanged.  *)
 
+val pop : t -> int * t
 
 val union : t -> t -> t
 (** Set union.  *)

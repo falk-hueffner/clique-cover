@@ -116,6 +116,11 @@ let rec remove s i =
 	s
 ;;
 
+let pop s =
+  let i = choose s in
+    i, remove s i
+;;
+
 let branch p m l r = Branch (p, m, size l + size r, l, r);;
 
 let rec union s1 s2 = match s1, s2 with
