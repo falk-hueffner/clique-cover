@@ -6,6 +6,7 @@ type t
 val empty : t
 (** Returns the empty graph.  *)
 
+val of_graph6 : string -> t
 val make_clique : int -> t
 
 val num_vertices : t -> int

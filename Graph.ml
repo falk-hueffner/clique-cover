@@ -60,6 +60,28 @@ let delete_vertex g i =
       g
 ;;
 
+let of_graph6 b =
+  for i = 0 to String.length b - 1 do
+    b.[i] <- char_of_int ((int_of_char b.[i]) - 63)
+  done;
+  let n = int_of_char b.[0] in
+  let get_bit i =
+    let byte = 1 + (i / 6) in
+    let bit = 5 - (i mod 6) in
+      (((int_of_char b.[byte]) lsr bit) land 1) <> 0 in
+  let rec loop g i j bit =
+    if i = j then
+      if j < n - 1 then loop g 0 (j + 1) bit else g
+    else
+      let g = 
+	if get_bit bit
+	then connect g i j
+	else g in
+	loop g (i + 1) j (bit + 1)
+  in
+    loop empty 0 1 0
+;;
+
 let is_connected g i j = IntSet.contains (IntMap.get g i) j;;
 
 let subgraph g vs =
