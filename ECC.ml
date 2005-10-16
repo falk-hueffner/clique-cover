@@ -70,6 +70,15 @@ let verify_cache ecc =
     ()
 ;;
 
+let refill ecc =
+  let vertices = Graph.vertices ecc.g in
+    { ecc with
+	rule1_cand = Graph.vertices ecc.uncovered;
+	rule3_cand = vertices;
+	rule4_cand = vertices;
+    }
+;;
+
 let cover ecc clique =
   assert (not (k_used_up ecc));
   let cache =
@@ -85,6 +94,7 @@ let cover ecc clique =
       clique
       ecc.cache
   in
+    refill
     { ecc with
 	uncovered = Graph.clear_subgraph ecc.uncovered clique;
 	k = ecc.k + 1;
@@ -115,7 +125,7 @@ let del_vertex ecc i =
 	   PSQueue.add cache (pack j k) neighbors' score')
       ecc.uncovered neighbors_i
       cache
-  in
+  in refill
     { ecc with g = g; uncovered = uncovered; cache = cache }
 ;;
   
@@ -125,11 +135,11 @@ let reduce_rule1 ecc =
   if not !use_rule1 then ecc else
   IntSet.fold
     (fun ecc i ->
-       if not (Graph.is_deg0 ecc.uncovered i)
+       if not (Graph.has_vertex ecc.uncovered i && Graph.is_deg0 ecc.uncovered i)
        then ecc
        else begin
 	 Util.int64_incr rule1_counter;
-	 del_vertex ecc i
+	 del_vertex ecc i;
        end)
     ecc.rule1_cand
     ecc
@@ -149,7 +159,7 @@ let reduce_rule2 ecc =
 	  Util.int64_incr rule2_counter;
 	  let clique = IntSet.add neighbors i in
 	  let clique = IntSet.add clique j in
-	    loop did_reduce (cover ecc clique)
+	    loop true (cover ecc clique)
 	end
   in
     loop false ecc
@@ -162,6 +172,7 @@ let reduce_rule3 ecc =
     else
       let i, rule3_cand = IntSet.pop ecc.rule3_cand in
       let ecc = { ecc with rule3_cand = rule3_cand } in
+      if not (Graph.has_vertex ecc.uncovered i) then loop did_reduce ecc else
       let neigh = Graph.neighbors ecc.uncovered i in
       let prisoners, exits =
 	IntSet.fold
@@ -192,6 +203,7 @@ let rec reduce_rule4 ecc =
     else
       let i, rule4_cand = IntSet.pop ecc.rule4_cand in
       let ecc = { ecc with rule4_cand = rule4_cand } in
+      if not (Graph.has_vertex ecc.uncovered i) then loop did_reduce ecc else
       let i_neighbors = Graph.neighbors ecc.g i in
       let i_neighbors_uncovered = Graph.neighbors ecc.uncovered i in
       let colors, num_colors =
@@ -263,13 +275,25 @@ let rec reduce_rule4 ecc =
 	    { ecc with g = g; uncovered = uncovered; cache = cache;
 		restorer = ecc.restorer @@ restorer }
 	  in
-	    true, ecc
+	    true, (refill ecc)
 	end
   in
     loop false ecc
 ;;
 
-let rec reduce ecc =
+let reduce ecc =
+  let rec reduce' ecc = 
+    let ecc = reduce_rule1 ecc in
+    let did_reduce, ecc = reduce_rule2 ecc in if did_reduce then reduce' ecc else
+    let did_reduce, ecc = reduce_rule3 ecc in if did_reduce then reduce' ecc else
+    let did_reduce, ecc = reduce_rule4 ecc in if did_reduce then reduce' ecc else
+      ecc
+  in
+  let ecc =  reduce' (refill ecc) in
+  let ecc =  reduce' (refill ecc) in
+    ecc
+
+(*
   let _, ecc = reduce_rule2 ecc in
   let ecc = reduce_rule1 ecc in
   let ecc = { ecc with rule3_cand = Graph.vertices ecc.g } in    
@@ -278,6 +302,7 @@ let rec reduce ecc =
   let _, ecc = reduce_rule4 ecc in
 (*     verify_cache ecc; *)
     ecc
+*)
 ;;
 
 let make g =
