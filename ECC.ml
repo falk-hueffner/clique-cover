@@ -161,120 +161,115 @@ let reduce_rule2 ecc =
       end
 ;;
 
-let reduce_rule3 ecc =
-  let rec loop ecc =
-    if not !use_rule3 || k_used_up ecc || IntSet.is_empty ecc.rule3_cand
-    then false, ecc
-    else
-      let i, rule3_cand = IntSet.pop ecc.rule3_cand in
-      let ecc = { ecc with rule3_cand = rule3_cand } in
-      if not (Graph.has_vertex ecc.uncovered i) then loop ecc else
-      let neigh = Graph.neighbors ecc.uncovered i in
-      let prisoners, exits =
-	IntSet.fold
-	  (fun (prisoners, exits) j ->
-	     if IntSet.is_subset (Graph.neighbors ecc.g j) neigh
-	     then IntSet.add prisoners j, exits
-	     else prisoners, IntSet.add exits j)
-	  neigh
-	  (IntSet.empty, IntSet.empty)
-      in
-	if not(IntSet.for_all
-		 (fun x -> IntSet.do_intersect (Graph.neighbors ecc.g x) prisoners)
-		 exits)
-	then loop ecc
-	else begin
-	  Util.int64_incr rule3_counter;
-	  (* FIXME prepare restorer  *)
-	  true, (del_vertex ecc i)
-	end
-    in
-      loop ecc
+let rec reduce_rule3 ecc =
+  if not !use_rule3 || k_used_up ecc || IntSet.is_empty ecc.rule3_cand
+  then false, ecc
+  else
+    let i, rule3_cand = IntSet.pop ecc.rule3_cand in
+    let ecc = { ecc with rule3_cand = rule3_cand } in
+      if not (Graph.has_vertex ecc.uncovered i) then reduce_rule3 ecc else
+	let neigh = Graph.neighbors ecc.uncovered i in
+	let prisoners, exits =
+	  IntSet.fold
+	    (fun (prisoners, exits) j ->
+	       if IntSet.is_subset (Graph.neighbors ecc.g j) neigh
+	       then IntSet.add prisoners j, exits
+	       else prisoners, IntSet.add exits j)
+	    neigh
+	    (IntSet.empty, IntSet.empty)
+	in
+	  if not(IntSet.for_all
+		   (fun x -> IntSet.do_intersect (Graph.neighbors ecc.g x) prisoners)
+		   exits)
+	  then reduce_rule3 ecc
+	  else begin
+	    Util.int64_incr rule3_counter;
+	    (* FIXME prepare restorer  *)
+	    true, (del_vertex ecc i)
+	  end
 ;;
 
 let rec reduce_rule4 ecc =
-  let rec loop ecc =
-    if not !use_rule4 || k_used_up ecc || IntSet.is_empty ecc.rule4_cand
-    then false, ecc
-    else
-      let i, rule4_cand = IntSet.pop ecc.rule4_cand in
-      let ecc = { ecc with rule4_cand = rule4_cand } in
-      if not (Graph.has_vertex ecc.uncovered i) then loop ecc else
-      let i_neighbors = Graph.neighbors ecc.g i in
-      let i_neighbors_uncovered = Graph.neighbors ecc.uncovered i in
-      let colors, num_colors =
-	Graph.fold_neighbors
-	  (fun (colors, num_colors) j ->
-	     if IntMap.has_key colors j 
-	     then colors, num_colors
-	     else
-	       let color = num_colors in
-	       let rec paint colors k =
-		 if IntMap.has_key colors k
-		 then colors
-		 else
-		   let colors = IntMap.add colors k color in
-		     IntSet.fold		(* fold_intersection *)
-                       (fun colors l -> paint colors l)
-		       (IntSet.intersection (Graph.neighbors ecc.g k) i_neighbors)
-		       colors
-               in
-		 paint colors j, num_colors + 1)
-	  ecc.g
-	  i
-	  (IntMap.empty, 0)
-      in
-	if num_colors <= 1
-	then loop ecc
-	else begin
-	  Util.int64_incr rule4_counter;
-	  let new_vertices_start = Graph.new_vertex ecc.g in
-	  let new_vertex color = new_vertices_start + color in
-	  let new_neighbor j = new_vertex (IntMap.get colors j) in
-	  let g = Graph.delete_vertex ecc.g i in
-	  let uncovered = Graph.delete_vertex ecc.uncovered i in
-	  let g =
-	    IntSet.fold (fun g j -> Graph.connect g j (new_neighbor j)) i_neighbors g in
-	  let uncovered =
-	    Util.fold_n (fun g j -> Graph.add_vertex g (new_vertex j)) num_colors uncovered in
-	  let uncovered =
-	    IntSet.fold (fun g j -> Graph.connect g j (new_neighbor j)) i_neighbors_uncovered uncovered in
-	  let cache =
-	    IntSet.fold
-	      (fun cache j ->
-		 let neighbors, prio = PSQueue.get cache (pack j i) in
-		 let cache = PSQueue.remove cache (pack j i) in
-		   PSQueue.add cache (pack j (new_neighbor j)) neighbors prio)
-	      i_neighbors_uncovered
-	      ecc.cache in
-	  let cache =
-	    Graph.fold_subgraph_edges
-	      (fun cache j k ->
-		 let neighbors, prio = PSQueue.get cache (pack j k) in
-		 let neighbors = IntSet.remove neighbors i in
-		 let neighbors = IntSet.add    neighbors (new_neighbor j) in		 
-		 let cache = PSQueue.remove cache (pack j k) in
-		   PSQueue.add cache (pack j k) neighbors prio)
-	      ecc.uncovered
-	      i_neighbors
-	      cache in
-	  let restorer =
-	    List.map
-	      (fun clique ->
-		 (IntSet.fold
-		    (fun s j ->
-		       let j = if Graph.has_vertex ecc.g j then j else i in
-			 IntSet.add s j)
-		    clique
-		    IntSet.empty)) in
-	  let ecc = 
-	    { ecc with g = g; uncovered = uncovered; cache = cache;
-		restorer = ecc.restorer @@ restorer }
-	  in
-	    true, (refill ecc)
-	end
-  in
-    loop ecc
+  if not !use_rule4 || k_used_up ecc || IntSet.is_empty ecc.rule4_cand
+  then false, ecc
+  else
+    let i, rule4_cand = IntSet.pop ecc.rule4_cand in
+    let ecc = { ecc with rule4_cand = rule4_cand } in
+      if not (Graph.has_vertex ecc.uncovered i) then reduce_rule4 ecc else
+	let i_neighbors = Graph.neighbors ecc.g i in
+	let i_neighbors_uncovered = Graph.neighbors ecc.uncovered i in
+	let colors, num_colors =
+	  Graph.fold_neighbors
+	    (fun (colors, num_colors) j ->
+	       if IntMap.has_key colors j 
+	       then colors, num_colors
+	       else
+		 let color = num_colors in
+		 let rec paint colors k =
+		   if IntMap.has_key colors k
+		   then colors
+		   else
+		     let colors = IntMap.add colors k color in
+		       IntSet.fold		(* fold_intersection *)
+			 (fun colors l -> paint colors l)
+			 (IntSet.intersection (Graph.neighbors ecc.g k) i_neighbors)
+			 colors
+		 in
+		   paint colors j, num_colors + 1)
+	    ecc.g
+	    i
+	    (IntMap.empty, 0)
+	in
+	  if num_colors <= 1
+	  then reduce_rule4 ecc
+	  else begin
+	    Util.int64_incr rule4_counter;
+	    let new_vertices_start = Graph.new_vertex ecc.g in
+	    let new_vertex color = new_vertices_start + color in
+	    let new_neighbor j = new_vertex (IntMap.get colors j) in
+	    let g = Graph.delete_vertex ecc.g i in
+	    let uncovered = Graph.delete_vertex ecc.uncovered i in
+	    let g =
+	      IntSet.fold (fun g j -> Graph.connect g j (new_neighbor j)) i_neighbors g in
+	    let uncovered =
+	      Util.fold_n (fun g j -> Graph.add_vertex g (new_vertex j)) num_colors uncovered in
+	    let uncovered =
+	      IntSet.fold (fun g j -> Graph.connect g j (new_neighbor j))
+		i_neighbors_uncovered uncovered in
+	    let cache =
+	      IntSet.fold
+		(fun cache j ->
+		   let neighbors, prio = PSQueue.get cache (pack j i) in
+		   let cache = PSQueue.remove cache (pack j i) in
+		     PSQueue.add cache (pack j (new_neighbor j)) neighbors prio)
+		i_neighbors_uncovered
+		ecc.cache in
+	    let cache =
+	      Graph.fold_subgraph_edges
+		(fun cache j k ->
+		   let neighbors, prio = PSQueue.get cache (pack j k) in
+		   let neighbors = IntSet.remove neighbors i in
+		   let neighbors = IntSet.add    neighbors (new_neighbor j) in		 
+		   let cache = PSQueue.remove cache (pack j k) in
+		     PSQueue.add cache (pack j k) neighbors prio)
+		ecc.uncovered
+		i_neighbors
+		cache in
+	    let restorer =
+	      List.map
+		(fun clique ->
+		   (IntSet.fold
+		      (fun s j ->
+			 let j = if Graph.has_vertex ecc.g j then j else i in
+			   IntSet.add s j)
+		      clique
+		      IntSet.empty)) in
+	    let ecc = 
+	      { ecc with g = g; uncovered = uncovered; cache = cache;
+		  restorer = ecc.restorer @@ restorer }
+	    in
+	      true, (refill ecc)
+	  end
 ;;
 
 let reduce ecc =
