@@ -156,8 +156,7 @@ let reduce_rule2 ecc =
 ;;
 
 let rec reduce_rule3 ecc =
-  if not !use_rule3 then ecc else
-  if k_used_up ecc || IntSet.is_empty ecc.rule3_cand
+  if not !use_rule3 || k_used_up ecc || IntSet.is_empty ecc.rule3_cand
   then ecc
   else
     let i, rule3_cand = IntSet.pop ecc.rule3_cand in
