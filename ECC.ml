@@ -154,13 +154,14 @@ let reduce_rule2 ecc =
     loop ecc
 ;;
 
-let rec reduce_rule3 ecc vertices =
+let rec reduce_rule3 ecc =
   if not !use_rule3 then ecc else
-  if k_used_up ecc || IntSet.is_empty vertices
+  if k_used_up ecc || IntSet.is_empty ecc.rule3_cand
   then ecc
   else
-    let i = IntSet.choose vertices in
-    let vertices = IntSet.remove vertices i in
+    let i = IntSet.choose ecc.rule3_cand in
+    let rule3_cand = IntSet.remove ecc.rule3_cand i in
+    let ecc = { ecc with rule3_cand = rule3_cand } in
     let neigh = Graph.neighbors ecc.uncovered i in
     let prisoners, exits =
       IntSet.fold
@@ -174,11 +175,11 @@ let rec reduce_rule3 ecc vertices =
       if not(IntSet.for_all
 	       (fun x -> IntSet.do_intersect (Graph.neighbors ecc.g x) prisoners)
 	       exits)
-      then reduce_rule3 ecc vertices
+      then reduce_rule3 ecc
       else begin
 	Util.int64_incr rule3_counter;
 	(* FIXME prepare restorer  *)
-	reduce_rule3 (del_vertex ecc i) vertices
+	reduce_rule3 (del_vertex ecc i)
       end
 ;;
 
@@ -305,7 +306,8 @@ let cover ecc clique =
   let ecc = reduce_rule2 ecc in
   let ecc = { ecc with rule1_cand = clique } in
   let ecc = reduce_rule1 ecc in
-  let ecc = reduce_rule3 ecc (Graph.vertices ecc.g) in
+  let ecc = { ecc with rule3_cand = Graph.vertices ecc.g } in    
+  let ecc = reduce_rule3 ecc in
   let ecc = reduce_rule4 ecc (Graph.vertices ecc.g) in
 (*     verify_cache ecc; *)
     ecc;
