@@ -159,8 +159,7 @@ let rec reduce_rule3 ecc =
   if k_used_up ecc || IntSet.is_empty ecc.rule3_cand
   then ecc
   else
-    let i = IntSet.choose ecc.rule3_cand in
-    let rule3_cand = IntSet.remove ecc.rule3_cand i in
+    let i, rule3_cand = IntSet.pop ecc.rule3_cand in
     let ecc = { ecc with rule3_cand = rule3_cand } in
     let neigh = Graph.neighbors ecc.uncovered i in
     let prisoners, exits =
@@ -183,14 +182,14 @@ let rec reduce_rule3 ecc =
       end
 ;;
 
-let rec reduce_rule4 ecc vertices =
-  if not !use_rule4 || k_used_up ecc || IntSet.is_empty vertices
+let rec reduce_rule4 ecc =
+  if not !use_rule4 || k_used_up ecc || IntSet.is_empty ecc.rule4_cand
   then ecc
   else
-    let i = IntSet.choose vertices in
+    let i, rule4_cand = IntSet.pop ecc.rule4_cand in
+    let ecc = { ecc with rule4_cand = rule4_cand } in
     let i_neighbors = Graph.neighbors ecc.g i in
     let i_neighbors_uncovered = Graph.neighbors ecc.uncovered i in
-    let vertices = IntSet.remove vertices i in
     let colors, num_colors =
       Graph.fold_neighbors
 	(fun (colors, num_colors) j ->
@@ -214,7 +213,7 @@ let rec reduce_rule4 ecc vertices =
 	(IntMap.empty, 0)
     in
       if num_colors <= 1
-      then reduce_rule4 ecc vertices
+      then reduce_rule4 ecc
       else begin
 (*	Printf.printf "aerate %d %a %a %a\n"
 	  i
@@ -308,7 +307,8 @@ let cover ecc clique =
   let ecc = reduce_rule1 ecc in
   let ecc = { ecc with rule3_cand = Graph.vertices ecc.g } in    
   let ecc = reduce_rule3 ecc in
-  let ecc = reduce_rule4 ecc (Graph.vertices ecc.g) in
+  let ecc = { ecc with rule4_cand = Graph.vertices ecc.g } in    
+  let ecc = reduce_rule4 ecc in
 (*     verify_cache ecc; *)
     ecc;
 ;;
