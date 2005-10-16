@@ -12,6 +12,7 @@ val restore : t -> IntSet.t list -> IntSet.t list
 val set_max_k : t -> int -> t
   
 val cover : t -> IntSet.t -> t
+val reduce : t -> t
 
 val use_rule1 : bool ref
 val use_rule2 : bool ref

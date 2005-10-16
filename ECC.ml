@@ -70,7 +70,7 @@ let verify_cache ecc =
     ()
 ;;
 
-let do_cover ecc clique =
+let cover ecc clique =
   assert (not (k_used_up ecc));
   let cache =
     IntSet.fold
@@ -89,7 +89,8 @@ let do_cover ecc clique =
 	uncovered = Graph.clear_subgraph ecc.uncovered clique;
 	k = ecc.k + 1;
 	cache = cache;
-	restorer = ecc.restorer @@ (fun cliques -> clique :: cliques) }
+	restorer = ecc.restorer @@ (fun cliques -> clique :: cliques);
+	rule1_cand = clique }
 ;;
 
 let del_vertex ecc i =
@@ -148,7 +149,7 @@ let reduce_rule2 ecc =
 	  Util.int64_incr rule2_counter;
 	  let clique = IntSet.add neighbors i in
 	  let clique = IntSet.add clique j in
-	    loop (do_cover ecc clique)
+	    loop (cover ecc clique)
 	end
   in
     loop ecc
@@ -263,6 +264,18 @@ let rec reduce_rule4 ecc =
 	{ ecc with g = g; uncovered = uncovered; cache = cache;
 	    restorer = ecc.restorer @@ restorer }
       end
+;;
+
+let rec reduce ecc =
+  let ecc = reduce_rule2 ecc in
+  let ecc = reduce_rule1 ecc in
+  let ecc = { ecc with rule3_cand = Graph.vertices ecc.g } in    
+  let ecc = reduce_rule3 ecc in
+  let ecc = { ecc with rule4_cand = Graph.vertices ecc.g } in    
+  let ecc = reduce_rule4 ecc in
+(*     verify_cache ecc; *)
+    ecc
+;;
 
 let make g =
   if !Util.verbose then Printf.eprintf "heating up cache...%!";
@@ -298,17 +311,4 @@ let branching_edge ecc =
   let edge, _, score = PSQueue.top ecc.cache in
     (*     Printf.eprintf "selecting edge %d %d with score %d\n%!" i j score; *)
     unpack edge
-;;
-
-let cover ecc clique =
-  let ecc = do_cover ecc clique in
-  let ecc = reduce_rule2 ecc in
-  let ecc = { ecc with rule1_cand = clique } in
-  let ecc = reduce_rule1 ecc in
-  let ecc = { ecc with rule3_cand = Graph.vertices ecc.g } in    
-  let ecc = reduce_rule3 ecc in
-  let ecc = { ecc with rule4_cand = Graph.vertices ecc.g } in    
-  let ecc = reduce_rule4 ecc in
-(*     verify_cache ecc; *)
-    ecc;
 ;;

@@ -25,6 +25,7 @@ let rec branch ecc depth =
       Util.list_find_opt
 	(fun clique ->
 	   let ecc = ECC.cover ecc clique in
+	   let ecc = ECC.reduce ecc in
 	     branch ecc (depth + 1))
 	cliques
 ;;
