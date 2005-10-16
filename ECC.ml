@@ -155,31 +155,34 @@ let reduce_rule2 ecc =
     loop false ecc
 ;;
 
-let rec reduce_rule3 ecc =
-  if not !use_rule3 || k_used_up ecc || IntSet.is_empty ecc.rule3_cand
-  then ecc
-  else
-    let i, rule3_cand = IntSet.pop ecc.rule3_cand in
-    let ecc = { ecc with rule3_cand = rule3_cand } in
-    let neigh = Graph.neighbors ecc.uncovered i in
-    let prisoners, exits =
-      IntSet.fold
-	(fun (prisoners, exits) j ->
-	   if IntSet.is_subset (Graph.neighbors ecc.g j) neigh
-	   then IntSet.add prisoners j, exits
-	   else prisoners, IntSet.add exits j)
-	neigh
-	(IntSet.empty, IntSet.empty)
+let reduce_rule3 ecc =
+  let rec loop did_reduce ecc =
+    if not !use_rule3 || k_used_up ecc || IntSet.is_empty ecc.rule3_cand
+    then did_reduce, ecc
+    else
+      let i, rule3_cand = IntSet.pop ecc.rule3_cand in
+      let ecc = { ecc with rule3_cand = rule3_cand } in
+      let neigh = Graph.neighbors ecc.uncovered i in
+      let prisoners, exits =
+	IntSet.fold
+	  (fun (prisoners, exits) j ->
+	     if IntSet.is_subset (Graph.neighbors ecc.g j) neigh
+	     then IntSet.add prisoners j, exits
+	     else prisoners, IntSet.add exits j)
+	  neigh
+	  (IntSet.empty, IntSet.empty)
+      in
+	if not(IntSet.for_all
+		 (fun x -> IntSet.do_intersect (Graph.neighbors ecc.g x) prisoners)
+		 exits)
+	then loop did_reduce ecc
+	else begin
+	  Util.int64_incr rule3_counter;
+	  (* FIXME prepare restorer  *)
+	  loop true (del_vertex ecc i)
+	end
     in
-      if not(IntSet.for_all
-	       (fun x -> IntSet.do_intersect (Graph.neighbors ecc.g x) prisoners)
-	       exits)
-      then reduce_rule3 ecc
-      else begin
-	Util.int64_incr rule3_counter;
-	(* FIXME prepare restorer  *)
-	reduce_rule3 (del_vertex ecc i)
-      end
+      loop false ecc
 ;;
 
 let rec reduce_rule4 ecc =
@@ -269,7 +272,7 @@ let rec reduce ecc =
   let _, ecc = reduce_rule2 ecc in
   let ecc = reduce_rule1 ecc in
   let ecc = { ecc with rule3_cand = Graph.vertices ecc.g } in    
-  let ecc = reduce_rule3 ecc in
+  let _, ecc = reduce_rule3 ecc in
   let ecc = { ecc with rule4_cand = Graph.vertices ecc.g } in    
   let ecc = reduce_rule4 ecc in
 (*     verify_cache ecc; *)
