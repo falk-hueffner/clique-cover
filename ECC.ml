@@ -146,33 +146,29 @@ let reduce_rule1 ecc =
 ;;
 
 let reduce_rule2 ecc =
-  if not !use_rule2 then false, ecc else
-  let rec loop did_reduce ecc =
-    if k_used_up ecc || PSQueue.is_empty ecc.cache
-    then did_reduce, ecc
-    else
-      let edge, neighbors, score = PSQueue.top ecc.cache in
-      let i, j = unpack edge in
-	if score > 0
-	then did_reduce, ecc
-	else begin
-	  Util.int64_incr rule2_counter;
-	  let clique = IntSet.add neighbors i in
-	  let clique = IntSet.add clique j in
-	    loop true (cover ecc clique)
-	end
-  in
-    loop false ecc
+  if not !use_rule2 || k_used_up ecc || PSQueue.is_empty ecc.cache
+  then false, ecc
+  else
+    let edge, neighbors, score = PSQueue.top ecc.cache in
+    let i, j = unpack edge in
+      if score > 0
+      then false, ecc
+      else begin
+	Util.int64_incr rule2_counter;
+	let clique = IntSet.add neighbors i in
+	let clique = IntSet.add clique j in
+	  true, (cover ecc clique)
+      end
 ;;
 
 let reduce_rule3 ecc =
-  let rec loop did_reduce ecc =
+  let rec loop ecc =
     if not !use_rule3 || k_used_up ecc || IntSet.is_empty ecc.rule3_cand
-    then did_reduce, ecc
+    then false, ecc
     else
       let i, rule3_cand = IntSet.pop ecc.rule3_cand in
       let ecc = { ecc with rule3_cand = rule3_cand } in
-      if not (Graph.has_vertex ecc.uncovered i) then loop did_reduce ecc else
+      if not (Graph.has_vertex ecc.uncovered i) then loop ecc else
       let neigh = Graph.neighbors ecc.uncovered i in
       let prisoners, exits =
 	IntSet.fold
@@ -186,24 +182,24 @@ let reduce_rule3 ecc =
 	if not(IntSet.for_all
 		 (fun x -> IntSet.do_intersect (Graph.neighbors ecc.g x) prisoners)
 		 exits)
-	then loop did_reduce ecc
+	then loop ecc
 	else begin
 	  Util.int64_incr rule3_counter;
 	  (* FIXME prepare restorer  *)
-	  loop true (del_vertex ecc i)
+	  true, (del_vertex ecc i)
 	end
     in
-      loop false ecc
+      loop ecc
 ;;
 
 let rec reduce_rule4 ecc =
-  let rec loop did_reduce ecc =
+  let rec loop ecc =
     if not !use_rule4 || k_used_up ecc || IntSet.is_empty ecc.rule4_cand
-    then did_reduce, ecc
+    then false, ecc
     else
       let i, rule4_cand = IntSet.pop ecc.rule4_cand in
       let ecc = { ecc with rule4_cand = rule4_cand } in
-      if not (Graph.has_vertex ecc.uncovered i) then loop did_reduce ecc else
+      if not (Graph.has_vertex ecc.uncovered i) then loop ecc else
       let i_neighbors = Graph.neighbors ecc.g i in
       let i_neighbors_uncovered = Graph.neighbors ecc.uncovered i in
       let colors, num_colors =
@@ -229,7 +225,7 @@ let rec reduce_rule4 ecc =
 	  (IntMap.empty, 0)
       in
 	if num_colors <= 1
-	then loop did_reduce ecc
+	then loop ecc
 	else begin
 	  Util.int64_incr rule4_counter;
 	  let new_vertices_start = Graph.new_vertex ecc.g in
@@ -278,7 +274,7 @@ let rec reduce_rule4 ecc =
 	    true, (refill ecc)
 	end
   in
-    loop false ecc
+    loop ecc
 ;;
 
 let reduce ecc =
