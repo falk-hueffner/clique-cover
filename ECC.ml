@@ -136,23 +136,23 @@ let reduce_rule1 ecc =
 ;;
 
 let reduce_rule2 ecc =
-  if not !use_rule2 then ecc else
-  let rec loop ecc =
+  if not !use_rule2 then false, ecc else
+  let rec loop did_reduce ecc =
     if k_used_up ecc || PSQueue.is_empty ecc.cache
-    then ecc
+    then did_reduce, ecc
     else
       let edge, neighbors, score = PSQueue.top ecc.cache in
       let i, j = unpack edge in
 	if score > 0
-	then ecc
+	then did_reduce, ecc
 	else begin
 	  Util.int64_incr rule2_counter;
 	  let clique = IntSet.add neighbors i in
 	  let clique = IntSet.add clique j in
-	    loop (cover ecc clique)
+	    loop did_reduce (cover ecc clique)
 	end
   in
-    loop ecc
+    loop false ecc
 ;;
 
 let rec reduce_rule3 ecc =
@@ -267,7 +267,7 @@ let rec reduce_rule4 ecc =
 ;;
 
 let rec reduce ecc =
-  let ecc = reduce_rule2 ecc in
+  let _, ecc = reduce_rule2 ecc in
   let ecc = reduce_rule1 ecc in
   let ecc = { ecc with rule3_cand = Graph.vertices ecc.g } in    
   let ecc = reduce_rule3 ecc in
@@ -300,7 +300,7 @@ let make g =
       rule1_cand = vertices;
       rule3_cand = vertices;
       rule4_cand = vertices; } in
-    let ecc = reduce_rule2 ecc in
+    let _, ecc = reduce_rule2 ecc in
     let ecc = reduce_rule1 ecc in
 (*     let ecc = reduce_rule3 ecc (Graph.vertices ecc.g) in *)
 (*       Printf.printf "reduced to k = %d\n" ecc.k; *)
