@@ -92,15 +92,22 @@ let cover ecc clique =
 	   clique
 	   cache)
       clique
-      ecc.cache
+      ecc.cache in
+  let vertices = Graph.vertices ecc.g in
+  let c_neigh =
+    IntSet.fold
+      (fun c_neigh i -> IntSet.union c_neigh (Graph.neighbors ecc.g i))
+      clique IntSet.empty
   in
-    refill
     { ecc with
 	uncovered = Graph.clear_subgraph ecc.uncovered clique;
 	k = ecc.k + 1;
 	cache = cache;
 	restorer = ecc.restorer @@ (fun cliques -> clique :: cliques);
-	rule1_cand = clique }
+	rule1_cand = clique;
+	rule3_cand = c_neigh;
+	rule4_cand = c_neigh;
+    }
 ;;
 
 let del_vertex ecc i =
@@ -125,7 +132,7 @@ let del_vertex ecc i =
 	   PSQueue.add cache (pack j k) neighbors' score')
       ecc.uncovered neighbors_i
       cache
-  in refill
+  in
     { ecc with g = g; uncovered = uncovered; cache = cache }
 ;;
   
@@ -139,7 +146,7 @@ let reduce_rule1 ecc =
        then ecc
        else begin
 	 Util.int64_incr rule1_counter;
-	 del_vertex ecc i;
+	 refill (del_vertex ecc i);
        end)
     ecc.rule1_cand
     ecc
@@ -185,7 +192,7 @@ let rec reduce_rule3 ecc =
 	  else begin
 	    Util.int64_incr rule3_counter;
 	    (* FIXME prepare restorer  *)
-	    true, (del_vertex ecc i)
+	    true, refill (del_vertex ecc i)
 	  end
 ;;
 
