@@ -338,3 +338,9 @@ let branching_edge ecc =
     (*     Printf.eprintf "selecting edge %d %d with score %d\n%!" i j score; *)
     unpack edge
 ;;
+
+let is_clique_cover g cliques =
+  List.for_all (fun c -> Graph.is_clique (Graph.subgraph g c)) cliques
+  && let g = List.fold_left Graph.clear_subgraph g cliques in
+    Graph.num_edges g = 0
+;;

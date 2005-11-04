@@ -1,5 +1,7 @@
 type t
 
+val is_clique_cover : Graph.t -> IntSet.t list -> bool
+  
 val make : Graph.t -> t
 
 val g : t -> Graph.t

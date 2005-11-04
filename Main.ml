@@ -83,12 +83,15 @@ let usage_msg = "Find edge clique covers";;
 
 let complement_graph = ref false;;
 let stats_only       = ref false;;
+let ksw	             = ref false;;
 
 let specs = [
   ("-s", Arg.Set(stats_only),
          "Print statistics only");
   ("-c", Arg.Set(complement_graph),
          "Work on complement graph");
+  ("-k", Arg.Set(ksw),
+         "Use heuristic by Kou et al.");
   ("-v", Arg.Set(Util.verbose),
          "Print progress to stderr");
   ("-1", Arg.Clear(ECC.use_rule1),
@@ -123,27 +126,26 @@ let print_cliques cliques vertex_names =
       cliques
 ;;
 
-let is_clique_cover g cliques =
-  List.for_all (fun c -> Graph.is_clique (Graph.subgraph g c)) cliques
-  && let g = List.fold_left Graph.clear_subgraph g cliques in
-    Graph.num_edges g = 0
-;;
-
 let () =
   Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;  
   let g, vertex_names = read_graph () in
   let g = if !complement_graph then Graph.complement g else g in
 (*     Graph.dump g; *)
   let start = Util.timer () in
-  let cliques = Branch.ecc_solve g in
-  let stop = Util.timer () in begin
+  let cliques =
+    if !ksw
+    then KSW.ecc_heuristic g
+    else Branch.ecc_solve g in
+  let stop = Util.timer () in
+  let ones = List.fold_left (fun ones c -> ones + (IntSet.size c)) 0 cliques in
+    begin
     if not !stats_only
     then print_cliques cliques vertex_names
-    else Printf.printf "%4d %4d %4d %8.2f %8Ld %8Ld %8Ld %8Ld %8Ld\n"
+    else Printf.printf "%4d %5d %4d %5d %8.2f %8Ld %8Ld %8Ld %2Ld %8Ld\n"
 	(Graph.num_vertices g) (Graph.num_edges g)
-	(List.length cliques) (stop -. start) !Branch.branch_calls
+	(List.length cliques) ones (stop -. start) !Branch.branch_calls
 	!ECC.rule1_counter !ECC.rule2_counter !ECC.rule3_counter !ECC.rule4_counter;
-    if not (is_clique_cover g cliques) then begin
+    if not (ECC.is_clique_cover g cliques) then begin
       Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
       exit 1;
     end
