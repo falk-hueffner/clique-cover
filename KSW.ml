@@ -46,6 +46,8 @@ let ecc_heuristic g =
 	       cover_rest w [])
       g
       [] in
+    cliques
+    (*
   let coverage = Array.make_matrix (Graph.num_vertices g) (Graph.num_vertices g) 0 in
   let update d set =
     IntSet.iter
@@ -64,4 +66,6 @@ let ecc_heuristic g =
 	 end else clique :: cliques)
       []
       cliques
+    *)
+      
 ;;

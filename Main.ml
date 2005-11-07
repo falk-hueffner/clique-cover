@@ -84,6 +84,8 @@ let usage_msg = "Find edge clique covers";;
 let complement_graph = ref false;;
 let stats_only       = ref false;;
 let ksw	             = ref false;;
+let sweep            = ref false;;
+let cover_singletons = ref false;;
 
 let specs = [
   ("-s", Arg.Set(stats_only),
@@ -92,6 +94,10 @@ let specs = [
          "Work on complement graph");
   ("-k", Arg.Set(ksw),
          "Use heuristic by Kou et al.");
+  ("-w", Arg.Set(sweep),
+         "Do sweeping");
+  ("-g", Arg.Set(cover_singletons),
+         "Cover singletons");
   ("-v", Arg.Set(Util.verbose),
          "Print progress to stderr");
   ("-1", Arg.Clear(ECC.use_rule1),
@@ -130,13 +136,24 @@ let () =
   Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;  
   let g, vertex_names = read_graph () in
   let g = if !complement_graph then Graph.complement g else g in
-(*     Graph.dump g; *)
+  let g', singletons =
+    Graph.fold_vertices
+      (fun (g', singletons) i neighbors ->
+	 if IntSet.is_empty neighbors
+	 then (Graph.delete_vertex g' i), (IntSet.add singletons i)
+	 else g', singletons)
+      g (g, IntSet.empty) in
   let start = Util.timer () in
   let cliques =
     if !ksw
-    then KSW.ecc_heuristic g
-    else Branch.ecc_solve g in
+    then KSW.ecc_heuristic g'
+    else Branch.ecc_solve g' in
+  let cliques = if !sweep then Sweep.sweep g cliques else cliques in
   let stop = Util.timer () in
+  let cliques =
+    if !cover_singletons
+    then IntSet.fold (fun cliques i -> (IntSet.singleton i) :: cliques) singletons cliques
+    else cliques in    
   let ones = List.fold_left (fun ones c -> ones + (IntSet.size c)) 0 cliques in
     begin
     if not !stats_only

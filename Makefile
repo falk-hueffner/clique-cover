@@ -9,6 +9,7 @@ SOURCES   = \
 	Cliques.ml	\
 	ECC.ml		\
 	Branch.ml	\
+	Sweep.ml	\
 	KSW.ml		\
 	Test.ml
 
