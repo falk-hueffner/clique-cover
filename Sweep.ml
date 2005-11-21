@@ -22,7 +22,7 @@ let sweep g cliques =
 		if IntSet.for_all (fun j -> i = j || get i j > 1) clique
 		then begin
 		  IntSet.iter (fun j -> if i <> j then update i j (-1)) clique;
-		  IntSet.remove clique' i;
+		  clique';
 		end else IntSet.add clique' i)	    
 	     clique
 	     IntSet.empty in
