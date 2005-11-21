@@ -84,6 +84,7 @@ let usage_msg = "Find edge clique covers";;
 let complement_graph = ref false;;
 let stats_only       = ref false;;
 let ksw	             = ref false;;
+let insert_absorb    = ref false;;
 let sweep            = ref false;;
 let cover_singletons = ref false;;
 
@@ -94,6 +95,8 @@ let specs = [
          "Work on complement graph");
   ("-k", Arg.Set(ksw),
          "Use heuristic by Kou et al.");
+  ("-i", Arg.Set(insert_absorb),
+         "Use Insert-Absorb heuristic");
   ("-w", Arg.Set(sweep),
          "Do sweeping");
   ("-g", Arg.Set(cover_singletons),
@@ -133,7 +136,11 @@ let print_cliques cliques vertex_names =
 ;;
 
 let () =
-  Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;  
+  Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;
+  if !ksw && !insert_absorb then begin
+    prerr_string "Cannot use both KSW and Insert-Absorb\n";
+    exit 1;
+  end;
   let g, vertex_names = read_graph () in
   let g = if !complement_graph then Graph.complement g else g in
   let g', singletons =
@@ -147,6 +154,8 @@ let () =
   let cliques =
     if !ksw
     then KSW.ecc_heuristic g'
+    else if !insert_absorb
+    then InsertAbsorb.ecc_heuristic g'
     else Branch.ecc_solve g' in
   let cliques = if !sweep then Sweep.sweep g cliques else cliques in
   let stop = Util.timer () in
