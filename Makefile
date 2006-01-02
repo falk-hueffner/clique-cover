@@ -11,6 +11,7 @@ SOURCES   = \
 	Branch.ml	\
 	Sweep.ml	\
 	KSW.ml		\
+	InsertAbsorb.ml	\
 	Test.ml
 
 C_SOURCES = \
