@@ -79,7 +79,7 @@ let () =
   then begin
     Printf.eprintf "usage: %s vertices                 \n" Sys.argv.(0);
     Printf.eprintf "       %s vertices edge-probability\n" Sys.argv.(0);
-    Printf.eprintf "       %s vertices cliques clique-size\n" Sys.argv.(0);
+    Printf.eprintf "       %s vertices edges max-clique-size\n" Sys.argv.(0);
     exit 1;
   end;
   let n = int_of_string Sys.argv.(1) in
