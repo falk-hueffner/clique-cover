@@ -79,7 +79,7 @@ let read_graph () =
     g, vertex_names
 ;;
 
-let usage_msg = "Find edge clique covers";;
+let usage_msg = "Find optimal edge clique covers";;
 
 let complement_graph = ref false;;
 let stats_only       = ref false;;
@@ -94,9 +94,9 @@ let specs = [
   ("-c", Arg.Set(complement_graph),
          "Work on complement graph");
   ("-k", Arg.Set(ksw),
-         "Use heuristic by Kou et al.");
+         "Use heuristic by Kellerman");
   ("-i", Arg.Set(insert_absorb),
-         "Use Insert-Absorb heuristic");
+         "Use Insert-Absorb heuristic by Piepho");
   ("-w", Arg.Set(sweep),
          "Do sweeping");
   ("-g", Arg.Set(cover_singletons),
@@ -138,7 +138,7 @@ let print_cliques cliques vertex_names =
 let () =
   Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;
   if !ksw && !insert_absorb then begin
-    prerr_string "Cannot use both KSW and Insert-Absorb\n";
+    prerr_string "Cannot use both Kellerman and Insert-Absorb\n";
     exit 1;
   end;
   let g, vertex_names = read_graph () in
@@ -172,7 +172,7 @@ let () =
 	(List.length cliques) ones (stop -. start) !Branch.branch_calls
 	!ECC.rule1_counter !ECC.rule2_counter !ECC.rule3_counter !ECC.rule4_counter;
     if not (ECC.is_clique_cover g cliques) then begin
-      Printf.fprintf stderr "VERIFICATION FAILED!!1!\n%!";
+      Printf.fprintf stderr "internal error: verification failed\n%!";
       exit 1;
     end
   end
