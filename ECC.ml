@@ -130,7 +130,7 @@ let cover ecc clique =
 	k = ecc.k + 1;
 	cache = cache;
 	restorer = ecc.restorer @@ (fun cliques -> clique :: cliques);
-	rule1_cand = clique;
+	rule1_cand = IntSet.union ecc.rule1_cand clique;
 	rule3_cand = c_neigh;
 	rule4_cand = c_neigh;
     }
@@ -157,23 +157,31 @@ let del_vertex ecc i =
 	   + IntSet.intersection_size neighbors_i neighbors' in
 	   PSQueue.add cache (pack j k) neighbors' score')
       ecc.uncovered neighbors_i
-      cache
+      cache in
+  let rule1_cand = IntSet.union ecc.rule1_cand neighbors_i in
+  let rule1_cand = IntSet.remove rule1_cand i
   in
-    { ecc with g = g; uncovered = uncovered; cache = cache }
+    { ecc with
+	g = g;
+	uncovered = uncovered;
+	cache = cache;
+	rule1_cand = rule1_cand;
+    }
 ;;
 
-let reduce_rule1 ecc =
-  if not !use_rule1 || k_used_up ecc then false, ecc else
-    match IntSet.find_opt
-      (fun i ->
-	 if Graph.is_deg0 ecc.uncovered i
-	 then Some i
-	 else None)
-      (Graph.vertices ecc.uncovered)
-    with
-	None -> false, ecc
-      | Some i -> (Util.int64_incr rule1_counter; true, del_vertex ecc i)
-  ;;
+let rec reduce_rule1 ecc =
+  if not !use_rule1 || k_used_up ecc || IntSet.is_empty ecc.rule1_cand
+  then false, ecc
+  else
+    let i, rule1_cand = IntSet.pop ecc.rule1_cand in
+    let ecc = { ecc with rule1_cand = rule1_cand } in
+      if Graph.is_deg0 ecc.uncovered i
+      then begin
+	Util.int64_incr rule1_counter;
+	true, del_vertex ecc i;
+      end else
+	reduce_rule1 ecc
+;;
 
 let reduce_rule2 ecc =
   if not !use_rule2 || k_used_up ecc || PSQueue.is_empty ecc.cache
@@ -247,60 +255,6 @@ let reduce_rule3 ecc =
   with
       None -> false, ecc
     | Some ecc2 -> true, ecc2
-;;
-
-	   
-	   
-    
-    
-let reduce_rule3_old ecc =
-  if not !use_rule3 || k_used_up ecc
-  then false, ecc
-  else
-    match IntSet.find_opt
-      (fun i ->	
-	 if not (Graph.has_vertex ecc.uncovered i) then None
-	 else
-	   let neigh = Graph.neighbors ecc.g i in
-	   let neigh' = IntSet.add neigh i in
-(* 	     Printf.eprintf "i = %d n = %a\n" i IntSet.output neigh; *)
-	   let prisoners, exits =
-	     IntSet.fold
-	       (fun (prisoners, exits) j ->
-		  if IntSet.is_subset (Graph.neighbors ecc.g j) neigh'
-		  then
-		    (
-(* 		      Printf.eprintf "  %d: %a is subset of %a\n" *)
-(* 			j IntSet.output (Graph.neighbors ecc.g j) *)
-(* 			  IntSet.output neigh; *)
-		    IntSet.add prisoners j, exits
-		    )
-		  else
-		    (
-(* 		      Printf.eprintf "  %d: %a no subset of %a\n" *)
-(* 			j IntSet.output (Graph.neighbors ecc.g j) *)
-(* 			  IntSet.output neigh; *)
-		      prisoners, IntSet.add exits j
-		    )
-	       )
-	       neigh
-	       (IntSet.empty, IntSet.empty)
-	   in
-(* 	     Printf.eprintf "  prisoners = %a exits = %a\n" *)
-(* 	       IntSet.output prisoners IntSet.output exits; *)
-	     if IntSet.for_all
-	       (fun x -> IntSet.do_intersect (Graph.neighbors ecc.uncovered x) prisoners)
-	       exits
-	     then Some i
-	     else None)
-      (Graph.vertices ecc.uncovered)
-    with
-	None -> false, ecc
-      | Some i ->
-	  Util.int64_incr rule3_counter;
-	  let ecc = del_vertex ecc i in
-	    (* FIXME restorer *)
-	    true, ecc
 ;;
 
 let reduce_rule4 ecc =
