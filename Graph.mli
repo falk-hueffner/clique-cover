@@ -16,6 +16,7 @@ val vertices : t -> IntSet.t
 val is_connected : t -> int -> int -> bool
 val neighbors : t -> int -> IntSet.t
 val is_deg0 : t -> int -> bool
+val deg : t -> int -> int
 val is_clique : t -> bool
 val choose_edge : t -> int * int
 

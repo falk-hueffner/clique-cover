@@ -4,6 +4,12 @@ val is_clique_cover : Graph.t -> IntSet.t list -> bool
   
 val make : Graph.t -> t
 
+val make1 : Graph.t -> Graph.t -> t
+val reduce_rule1 : t -> bool * t
+val reduce_rule2 : t -> bool * t
+val reduce_rule3 : t -> bool * t
+val reduce_rule4 : t -> bool * t
+
 val g : t -> Graph.t
 val k : t -> int
 val k_used_up : t -> bool

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-OPT=
+OPT="-3 -4"
 
 echo -n "Dataset A " && ./ecc $OPT -s -c < test/dataset_a.graph
 echo -n "Dataset B " && ./ecc $OPT -s -c < test/dataset_b.graph

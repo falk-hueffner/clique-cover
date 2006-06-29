@@ -75,25 +75,16 @@ let cliquegraph n m c =
 ;;
 
 let () =
-  if Array.length Sys.argv < 2 || Array.length Sys.argv > 4
+  if Array.length Sys.argv < 3 || Array.length Sys.argv > 4
   then begin
-    Printf.eprintf "usage: %s vertices                 \n" Sys.argv.(0);
-    Printf.eprintf "       %s vertices edge-probability\n" Sys.argv.(0);
-    Printf.eprintf "       %s vertices edges max-clique-size\n" Sys.argv.(0);
+    Printf.eprintf "usage: %s vertices edge-probability [seed]\n" Sys.argv.(0);
     exit 1;
   end;
   let n = int_of_string Sys.argv.(1) in
-  Random.self_init ();
   if Array.length Sys.argv = 4
-  then cliquegraph n (int_of_string Sys.argv.(2)) (int_of_string Sys.argv.(3))
-  else
-  let p =
-    if  Array.length Sys.argv = 3
-    then float_of_string Sys.argv.(2)
-    else
-      let n = float_of_int n in
-	(n *. log n) /. ((n *. (n -. 1.0) /. 2.0))
-  in
+  then Random.init (int_of_string Sys.argv.(3))
+  else Random.self_init ();
+  let p = float_of_string Sys.argv.(2) in
   let g =
     Util.fold_n
       (fun g i ->

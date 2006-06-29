@@ -10,9 +10,8 @@ let rec branch ecc depth =
   else if ECC.k_used_up ecc
   then None
   else
-(*     let ecc = reduce_singletons ecc in *)
     let i, j = ECC.branching_edge ecc in
-(*      Printf.eprintf "%sbranch on %d %d%!" (spc depth) i j;  *)
+(*       Printf.eprintf "%sk = %d branch on %d %d%!" (spc depth) (ECC.k ecc) i j;  *)
     let neighbors =
       IntSet.intersection
 	(Graph.neighbors (ECC.g ecc) i)
@@ -21,7 +20,7 @@ let rec branch ecc depth =
       Cliques.max_cliques (Graph.subgraph (ECC.g ecc) neighbors) in
     let cliques = List.map (fun s -> IntSet.add s i) cliques in
     let cliques = List.map (fun s -> IntSet.add s j) cliques in
-(*     Printf.eprintf " -> %a\n%!" (Util.output_list IntSet.output) cliques; *)
+(*      Printf.eprintf " -> %a\n%!" (Util.output_list IntSet.output) cliques; *)
       Util.list_find_opt
 	(fun clique ->
 	   let ecc = ECC.cover ecc clique in
@@ -34,6 +33,7 @@ let ecc_solve g =
   let ecc = ECC.make g in
   let rec loop k =
     let ecc = ECC.set_max_k ecc k in
+    let ecc = ECC.reduce ecc in
       if !Util.verbose then Printf.eprintf "*** k = %d ***\n%!" k;
       match branch ecc 0 with
           None -> loop (k + 1)
