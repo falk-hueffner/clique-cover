@@ -47,25 +47,4 @@ let ecc_heuristic g =
       g
       [] in
     cliques
-    (*
-  let coverage = Array.make_matrix (Graph.num_vertices g) (Graph.num_vertices g) 0 in
-  let update d set =
-    IntSet.iter
-      (fun i -> IntSet.iter
-	 (fun j ->
-	    if i < j then coverage.(i).(j) <- coverage.(i).(j) + d) set) set in
-    List.iter (update 1) cliques;
-    List.fold_left
-      (fun cliques clique ->
-	 if IntSet.for_all
-	   (fun i -> IntSet.for_all
-	      (fun j -> not (i < j && coverage.(i).(j) <= 1)) clique) clique
-	 then begin
-	   update (-1) clique;
-	   cliques
-	 end else clique :: cliques)
-      []
-      cliques
-    *)
-      
 ;;

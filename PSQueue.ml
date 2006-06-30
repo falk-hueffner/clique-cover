@@ -15,10 +15,13 @@ let rec highest_bit x =
     then x
     else highest_bit x'
 ;;
+
 let branching_bit m p1 p2 =
   let x = p1 lxor p2 in
   let x = x land lnot (m - 1) in
-    highest_bit x;;
+    highest_bit x
+;;
+
 let mask i m = (i lor (m - 1 + m)) - m;;
 let prefix_matches i p m = (mask i m = p)
 

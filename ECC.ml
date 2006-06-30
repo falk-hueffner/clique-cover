@@ -335,62 +335,13 @@ let reduce_rule4 ecc =
       (false, ecc)      
 ;;
 
-(*
-let reduce_rule5 ecc =
-  if not !use_rule5 || k_used_up ecc then false, ecc else
-    match Graph.fold_edges
-      (fun edge i j ->
-	 if edge <> None then edge
-	 else
-	   let neighbors, _ = edge_score ecc.g i j in
-	     if IntSet.empty neighbors then None
-	     else let i_cand = Graph.neighbors ecc.uncovered
-      )
-      ecc.uncovered
-      None
-    with
-	None -> 1
-      | Some (i, j) -> 1
-;;
-*)	     
-
-
 let rec reduce ecc =
   let did_reduce, ecc = reduce_rule1 ecc in if did_reduce then reduce ecc else
   let did_reduce, ecc = reduce_rule2 ecc in if did_reduce then reduce ecc else
   let did_reduce, ecc = reduce_rule3 ecc in if did_reduce then reduce ecc else
   let did_reduce, ecc = reduce_rule4 ecc in if did_reduce then reduce ecc else
-      (
-(* 	verify_cache ecc;  *)
-	ecc
-      )
-;;
-
-(*
-let reduce ecc =
-  let rec reduce' ecc = 
-    let ecc = reduce_rule1 ecc in
-    let did_reduce, ecc = reduce_rule2 ecc in if did_reduce then reduce' ecc else
-    let did_reduce, ecc = reduce_rule3 ecc in if did_reduce then reduce' ecc else
-    let did_reduce, ecc = reduce_rule4 ecc in if did_reduce then reduce' ecc else
       ecc
-  in
-(*   let ecc =  reduce' (refill ecc) in *)
-  let ecc =  reduce' (refill ecc) in
-    ecc
-
-(*
-  let _, ecc = reduce_rule2 ecc in
-  let ecc = reduce_rule1 ecc in
-  let ecc = { ecc with rule3_cand = Graph.vertices ecc.g } in    
-  let _, ecc = reduce_rule3 ecc in
-  let ecc = { ecc with rule4_cand = Graph.vertices ecc.g } in    
-  let _, ecc = reduce_rule4 ecc in
-(*     verify_cache ecc; *)
-    ecc
-*)
 ;;
-*)
 
 let make g =
   if !Util.verbose then Printf.eprintf "heating up cache...%!";
@@ -414,17 +365,12 @@ let make g =
       restorer   = (fun cliques -> cliques);
       rule1_cand = vertices; } in
     let ecc = reduce ecc in
-(*     let _, ecc = reduce_rule2 ecc in *)
-(*     let _, ecc = reduce_rule1 ecc in *)
-(*     let ecc = reduce_rule3 ecc (Graph.vertices ecc.g) in *)
-(*       Printf.printf "reduced to k = %d\n" ecc.k; *)
       ecc
 ;;
 
 let branching_edge ecc =
   let edge, _, score = PSQueue.top ecc.cache in
   let i, j = unpack edge in
-(*     Printf.eprintf "selecting edge %d %d with score %d\n%!" i j score; *)
     i, j
 ;;
 

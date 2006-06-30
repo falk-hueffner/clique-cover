@@ -135,57 +135,6 @@ let print_cliques cliques vertex_names =
       cliques
 ;;
 
-(*
-
-let () =
-  let g, vertex_names = read_graph () in
-    Graph.print g;
-    let g' = Graph.disconnect g 0 4 in
-    let ecc = ECC.make1 g g in
-    let applicable1, _ = ECC.reduce_rule1 ecc in
-    let applicable2, _ = ECC.reduce_rule2 ecc in
-    let applicable3, _ = ECC.reduce_rule3 ecc in
-    let applicable4, _ = ECC.reduce_rule4 ecc in
-      Printf.printf "\n%b %b %b %b\n" applicable1 applicable2 applicable3 applicable4;
-      assert(false);
-;;
-
-*)
-
-
-(*
-let () =
-  Random.self_init ();
-  try
-    while true do
-      let line = read_line () in
-      let g = Graph.of_graph6 line in
-      let g' = Graph.fold_edges
-	(fun g' i j -> if Random.bool () then g' else Graph.disconnect g' i j)
-	g g in
-	
-(*       let ecc = ECC.make1 g g' in *)
-      let ecc = ECC.make1 g g in
-      let applicable1, _ = ECC.reduce_rule1 ecc in
-      let applicable2, _ = ECC.reduce_rule2 ecc in
-      let applicable3, _ = ECC.reduce_rule3 ecc in
-       let applicable4, _ = ECC.reduce_rule4 ecc in 
- 	 if not applicable2 then 
- 	  Printf.printf "%b %b %b %b\n" applicable1 applicable2 applicable3 applicable4; 
-	if  (not applicable1) && (not applicable2) && applicable3
-	then begin
-	  Graph.print g;
-	end
-(* 	  Printf.printf "applicable: %s\n" (if applicable then "yes" else "no"); *)
-    done
-  with End_of_file -> ()
-
-*)
-
-
-  
-
-
 let () =
   Arg.parse specs (fun _ -> Arg.usage specs usage_msg) usage_msg;
   if !ksw && !insert_absorb then begin
@@ -228,5 +177,3 @@ let () =
     end
   end
 ;;
-
-

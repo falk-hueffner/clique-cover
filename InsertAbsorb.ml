@@ -1,7 +1,6 @@
 let ecc_heuristic g =
   Graph.fold_edges
     (fun cliques i j ->
-(*        Printf.eprintf "%d %d Cliques %a\n" i j (Util.output_list IntSet.output) cliques; *)
        let old_cliques, new_cliques =
 	 List.fold_left
 	   (fun (old_cliques, new_cliques) clique ->
