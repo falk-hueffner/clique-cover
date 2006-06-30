@@ -6,8 +6,6 @@ type t = {
   cache:      IntSet.t PSQueue.t;
   restorer:   IntSet.t list -> IntSet.t list;
   rule1_cand: IntSet.t;
-  rule3_cand: IntSet.t;
-  rule4_cand: IntSet.t;  
 };;
 
 let use_rule1        = ref true;;
@@ -89,9 +87,7 @@ let make1 g g' =
     max_k      = 1000;
     cache      = cache;
     restorer   = (fun cliques -> cliques);
-    rule1_cand = vertices;
-    rule3_cand = vertices;
-    rule4_cand = vertices; }
+    rule1_cand = vertices; }
   in
     ecc
 ;;
@@ -100,8 +96,6 @@ let refill ecc =
   let vertices = Graph.vertices ecc.g in
     { ecc with
 	rule1_cand = Graph.vertices ecc.uncovered;
-	rule3_cand = vertices;
-	rule4_cand = vertices;
     }
 ;;
 
@@ -131,8 +125,6 @@ let cover ecc clique =
 	cache = cache;
 	restorer = ecc.restorer @@ (fun cliques -> clique :: cliques);
 	rule1_cand = IntSet.union ecc.rule1_cand clique;
-	rule3_cand = c_neigh;
-	rule4_cand = c_neigh;
     }
 ;;
 
@@ -367,7 +359,7 @@ let rec reduce ecc =
   let did_reduce, ecc = reduce_rule1 ecc in if did_reduce then reduce ecc else
   let did_reduce, ecc = reduce_rule2 ecc in if did_reduce then reduce ecc else
   let did_reduce, ecc = reduce_rule3 ecc in if did_reduce then reduce ecc else
-(*   let did_reduce, ecc = reduce_rule4 ecc in if did_reduce then reduce ecc else *)
+  let did_reduce, ecc = reduce_rule4 ecc in if did_reduce then reduce ecc else
       (
 (* 	verify_cache ecc;  *)
 	ecc
@@ -420,9 +412,7 @@ let make g =
       max_k      = max_int;
       cache      = cache;
       restorer   = (fun cliques -> cliques);
-      rule1_cand = vertices;
-      rule3_cand = vertices;
-      rule4_cand = vertices; } in
+      rule1_cand = vertices; } in
     let ecc = reduce ecc in
 (*     let _, ecc = reduce_rule2 ecc in *)
 (*     let _, ecc = reduce_rule1 ecc in *)
