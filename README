@@ -1,0 +1,53 @@
+ecc version 1.0
+---------------
+
+This package contains the source code accompanying the paper
+
+Jens Gramm, Jiong Guo, Falk Hüffner, and Rolf Niedermeier:
+Data Reduction and Exact Algorithms for Clique Cover.
+
+Its purpose is to solce the Clique Cover problem, that is, to find a
+minimum set of cliques in a graph such that every edge is covered by
+at least one clique.
+
+The program is written in Objective Caml and should be portable to any
+supported system that provides the "Unix" module (only required for
+timings). The current version can be obtained at
+http://theinf1.informatik.uni-jena.de/ecc/. It is distributed under
+the terms of the GNU General Public License (GPL, see COPYING).
+
+It has been tested on:
+
+* Debian GNU/Linux (i386) 3.1 with Objective Caml 3.08.3
+* Digital Unix 5.1 (Alpha) with Objective Caml 3.08.4
+
+If you have the "make" utility (as any Unix system has), you can
+compile with "make".
+
+The program is called "ecc". By default, it reads a graph from
+standard input and writes the cliques found to standard output. The
+graph format is a simple text format, where each line describes one
+edge, given by its two endpoints separated by whitespace:
+
+v0 v1
+v1 v2
+v2 v0
+v1 v3
+
+Vertex names can be any combination of letters, digits, and _. Lines
+starting with '#' are treated as comments. Note that this graph format
+cannot describe degree-0 vertices; however, they are irrelevant for
+covering cliques anyway.
+
+The output is a set of cliques covering every edge of the graph. Each
+line describes one clique by listing its vertices. Example:
+
+$ ./ecc < example.graph 
+v0 v1 v2
+v1 v3
+
+There are many options that affect program behavior; see ./ecc --help
+for a listing.
+
+-- Falk Hueffner (http://theinf1.informatik.uni-jena.de/~hueffner/)
+   June 30, 2006
