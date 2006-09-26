@@ -1,4 +1,4 @@
-EXECS	  = ecc random-graph gnmp random-cliques
+EXECS	  = ecc random-graph gnmp
 
 SOURCES   = \
 	Util.ml		\
@@ -50,9 +50,6 @@ random-graph: $(OBJS) Random-graph.cmx
 	$(OCAMLOPT) $(PROFILE) -o $@ $(LIBS) $^
 
 gnmp: $(OBJS) Gnmp.cmx
-	$(OCAMLOPT) $(PROFILE) -o $@ $(LIBS) $^
-
-random-cliques: $(OBJS) Random-cliques.cmx
 	$(OCAMLOPT) $(PROFILE) -o $@ $(LIBS) $^
 
 doc/index.html: $(MLIS)
