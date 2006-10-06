@@ -11,8 +11,7 @@ SOURCES   = \
 	Branch.ml	\
 	Sweep.ml	\
 	KSW.ml		\
-	InsertAbsorb.ml	\
-	Test.ml
+	InsertAbsorb.ml
 
 C_SOURCES = \
 
@@ -22,7 +21,7 @@ LIBS	  = unix.cmxa
 
 CC	  = gcc
 OCAMLC    = ocamlc -g -warn-error A $(INCLUDES)
-OCAMLOPT  = ocamlopt -inline 10000000 -warn-error A $(INCLUDES)
+OCAMLOPT  = ocamlopt -warn-error A $(INCLUDES)
 OCAMLDEP  = ocamldep $(INCLUDES)
 
 #PROFILE  = -p
@@ -66,6 +65,17 @@ doc/index.html: $(MLIS)
 
 .ml.cmx:
 	$(OCAMLOPT) $(PROFILE) -c $<
+
+VER	= 1.1
+DIR	= ecc-$(VER)
+
+dist: all
+	rm -rf $(DIR)
+	mkdir $(DIR)
+	cp COPYING README $(DIR)
+	cp .depend $(DIR)
+	cp Makefile *.ml *.mli $(DIR)
+	GZIP=--best tar -cvvzf $(DIR).tar.gz $(DIR)
 
 clean:
 	rm -f $(EXECS) ecc-dbg core gmon.out
