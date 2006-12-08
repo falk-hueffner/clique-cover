@@ -1,4 +1,4 @@
-ecc version 1.0
+ecc version 1.1
 ---------------
 
 This package contains the source code accompanying the paper
@@ -49,5 +49,11 @@ v1 v3
 There are many options that affect program behavior; see ./ecc --help
 for a listing.
 
+Version history
+---------------
+
+1.0 initial release
+1.1 minor changes
+
 -- Falk Hüffner (http://theinf1.informatik.uni-jena.de/~hueffner/)
-   June 30, 2006
+   6 October 2006
