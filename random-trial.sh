@@ -1,17 +1,20 @@
 #! /bin/sh
 
-OPT="-4"
+#OPT="-4"
 
-trials=$1
-n=$2
+#trials=$1
+#n=$2
 
-if [ -n "$3" ]; then
-  p=$3
-else
+trials=1
+p=$1
+x=$2
+
+#ulimit -t 600
+
+for n in $(seq 2000 20000); do
   p=$(echo "$n * l($n) / (($n * ($n-1)) / 2)" | bc -l)
-fi
-
-(for i in $(seq $trials); do
-  ./random-graph $n $p $i | ./ecc -s $OPT | tee /dev/stderr
-done) \
-| ./avg.py
+  for i in $(seq 0 $((trials - 1))); do
+    printf "%3d %4.2f %3d " $n $p $((x+i))
+    (./random-graph $n $p $((x+i)) | ./ecc -s) 2>/dev/null || echo # $OPT
+  done
+done
