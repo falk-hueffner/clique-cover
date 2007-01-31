@@ -150,6 +150,9 @@ let () =
 	 then (Graph.delete_vertex g' i), (IntSet.add singletons i)
 	 else g', singletons)
       g (g, IntSet.empty) in
+  if !stats_only
+  then Printf.printf "%3d %4d%!"
+	(Graph.num_vertices g) (Graph.num_edges g);
   let start = Util.timer () in
   let cliques =
     if !ksw
@@ -167,8 +170,7 @@ let () =
     begin
     if not !stats_only
     then print_cliques cliques vertex_names
-    else Printf.printf "%4d %5d %4d %5d %8.2f %8Ld %8Ld %8Ld %8Ld %1Ld\n"
-	(Graph.num_vertices g) (Graph.num_edges g)
+    else Printf.printf " %4d %5d %8.2f %8Ld %8Ld %8Ld %8Ld %1Ld\n"
 	(List.length cliques) ones (stop -. start) !Branch.branch_calls
 	!ECC.rule1_counter !ECC.rule2_counter !ECC.rule3_counter !ECC.rule4_counter;
     if not (ECC.is_clique_cover g cliques) then begin
