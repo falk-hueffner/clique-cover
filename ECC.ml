@@ -93,10 +93,9 @@ let make1 g g' =
 ;;
 
 let refill ecc =
-  let vertices = Graph.vertices ecc.g in
-    { ecc with
-	rule1_cand = Graph.vertices ecc.uncovered;
-    }
+  { ecc with
+      rule1_cand = Graph.vertices ecc.uncovered;
+  }
 ;;
 
 let cover ecc clique =
@@ -112,12 +111,7 @@ let cover ecc clique =
 	   clique
 	   cache)
       clique
-      ecc.cache in
-  let vertices = Graph.vertices ecc.g in
-  let c_neigh =
-    IntSet.fold
-      (fun c_neigh i -> IntSet.union c_neigh (Graph.neighbors ecc.g i))
-      clique IntSet.empty
+      ecc.cache
   in
     { ecc with
 	uncovered = Graph.clear_subgraph ecc.uncovered clique;
