@@ -19,7 +19,7 @@ let gnmp n m p =
 let () =
   if Array.length Sys.argv < 4 || Array.length Sys.argv > 5
   then begin
-    Printf.eprintf "usage: %s n m p [rand-seed]\n" Sys.argv.(0);
+    Printf.eprintf "usage: %s n m edges [rand-seed]\n" Sys.argv.(0);
     exit 1;
   end;
   let n = int_of_string Sys.argv.(1) in
