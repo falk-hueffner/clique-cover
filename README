@@ -3,7 +3,7 @@ ecc version 1.1
 
 This package contains the source code accompanying the paper
 
-Jens Gramm, Jiong Guo, Falk Hüffner, and Rolf Niedermeier:
+Jens Gramm, Jiong Guo, Falk HÃ¼ffner, and Rolf Niedermeier:
 Data Reduction and Exact Algorithms for Clique Cover.
 
 Its purpose is to solve the Clique Cover problem, that is, to find a
@@ -18,8 +18,7 @@ the terms of the GNU General Public License (GPL, see COPYING).
 
 It has been tested on:
 
-* Debian GNU/Linux (i386) 3.1 with Objective Caml 3.08.3
-* Digital Unix 5.1 (Alpha) with Objective Caml 3.08.4
+* Debian GNU/Linux (amd64) 6.0.1 with Objective Caml 3.11.2
 
 If you have the "make" utility (as any Unix system has), you can
 compile with "make".
@@ -52,8 +51,7 @@ for a listing.
 Version history
 ---------------
 
-1.0 initial release
-1.1 minor changes
+1.0  2006-10-06  initial release
+1.1  2007-01-31  minor changes
 
--- Falk Hüffner (http://theinf1.informatik.uni-jena.de/~hueffner/)
-   6 October 2006
+-- Falk HÃ¼ffner (http://www.user.tu-berlin.de/hueffner/)
