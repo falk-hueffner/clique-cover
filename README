@@ -5,6 +5,8 @@ This package contains the source code accompanying the paper
 
 Jens Gramm, Jiong Guo, Falk Hüffner, and Rolf Niedermeier:
 Data Reduction and Exact Algorithms for Clique Cover.
+ACM Journal of Experimental Algorithmics, 13, Article 2.2, 15 pages, 2008.
+http://dx.doi.org/10.1145/1412228.1412236
 
 Its purpose is to solve the Clique Cover problem, that is, to find a
 minimum set of cliques in a graph such that every edge is covered by
