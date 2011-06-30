@@ -1,0 +1,10 @@
+*.cmi
+*.cmx
+*.o
+*~
+.depend
+doc
+ecc
+gnmp
+random-graph
+
