@@ -20,15 +20,15 @@ INCLUDES  = #-I extlib-dev
 LIBS	  = unix.cmxa
 
 CC	  = gcc
-OCAMLC    = ocamlc -g -warn-error A $(INCLUDES)
-OCAMLOPT  = ocamlopt -warn-error A $(INCLUDES)
+OCAMLC    = ocamlc -g $(INCLUDES)
+OCAMLOPT  = ocamlopt $(INCLUDES)
 OCAMLDEP  = ocamldep $(INCLUDES)
 
 #PROFILE  = -p
 
 CFLAGS	  = -std=c99 -g -I $(HOME)/include
 CFLAGS	 += -O3 $(shell gcc-arch) $(PROFILE) -funroll-all-loops -ffast-math
-CFLAGS	 += -W -Wall -Wno-unused -Werror
+CFLAGS	 += -W -Wall -Wno-unused
 #CFLAGS	 += -DNDEBUG
 
 all: depend $(EXECS) doc/index.html
