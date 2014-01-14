@@ -45,7 +45,7 @@ ecc: $(OBJS) Main.cmx
 ecc-dbg: $(DBG_OBJS) Main.cmo $(C_OBJS)
 	$(OCAMLC) $(PROFILE) -o $@ $(DBG_LIBS) $^
 
-random-graph: $(OBJS) Random-graph.cmx
+random-graph: $(OBJS) RandomGraph.cmx
 	$(OCAMLOPT) $(PROFILE) -o $@ $(LIBS) $^
 
 gnmp: $(OBJS) Gnmp.cmx
