@@ -1,0 +1,15 @@
+This is the data sets accompanying the paper
+
+Jens Gramm, Jiong Guo, Falk Hüffner, Rolf Niedermeier, Hans-Peter
+Piepho, and Ramona Schmid:  
+Algorithms for compact letter displays: comparison and evaluation.
+Computational Statistics & Data Analysis, 52(2):725-736, 2007
+https://dx.doi.org/10.1016/j.csda.2006.09.035
+http://hueffner.de/falk/letter-displays-csda06.pdf
+
+Each file contains the pairs of trials that were significantly
+different.
+
+-- Falk Hüffner (http://hueffner.de/falk/)
+   17 April 2009
+
