@@ -1,13 +1,13 @@
-ecc version 1.1.1
+ecc version 1.1.2
 -----------------
 
-This package contains the source code accompanying the paper
+This is the source code accompanying the paper
 
 Jens Gramm, Jiong Guo, Falk Hüffner, and Rolf Niedermeier:
 Data reduction and exact algorithms for Clique Cover.
 ACM Journal of Experimental Algorithmics, 13, Article 2.2, 15 pages, 2008.
-http://dx.doi.org/10.1145/1412228.1412236
-http://www.user.tu-berlin.de/hueffner/clique-cover-jea07.pdf
+https://dx.doi.org/10.1145/1412228.1412236
+http://hueffner.de/falk/clique-cover-jea07.pdf
 
 Its purpose is to solve the Clique Cover problem, that is, to find a
 minimum set of cliques in a graph such that every edge is covered by
@@ -16,12 +16,12 @@ at least one clique.
 The program is written in Objective Caml and should be portable to any
 supported system that provides the "Unix" module (only required for
 timings). The current version can be obtained at
-http://www.user.tu-berlin.de/hueffner/ecc/. It is distributed under
+https://github.com/falk-hueffner/clique-cover. It is distributed under
 the terms of the GNU General Public License (GPL, see COPYING).
 
 It has been tested on:
 
-* Debian GNU/Linux (amd64) 6.0.1 with Objective Caml 3.11.2
+* Ubuntu GNU/Linux (amd64) 18.04.5 with Objective Caml 4.05.0
 
 If you have the "make" utility (as any Unix system has), you can
 compile with "make".
@@ -58,6 +58,7 @@ Version history
 1.0   initial release
 1.1   minor changes
 1.1.1 compile fix
+1.1.2 URL updates
 
--- Falk Hüffner (http://www.user.tu-berlin.de/hueffner/)
-   14 January 2014
+-- Falk Hüffner (http://hueffner.de/falk/)
+   9 August 2021
