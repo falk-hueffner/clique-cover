@@ -22,7 +22,7 @@ LIBS	  = unix.cmxa
 CC	  = gcc
 OCAMLC    = ocamlc -g $(INCLUDES)
 OCAMLOPT  = ocamlopt $(INCLUDES)
-OCAMLDEP  = ocamldep $(INCLUDES)
+OCAMLDEP  = ocamldep -native $(INCLUDES)
 
 #PROFILE  = -p
 
@@ -31,7 +31,7 @@ CFLAGS	 += -O3 $(shell gcc-arch) $(PROFILE) -funroll-all-loops -ffast-math
 CFLAGS	 += -W -Wall -Wno-unused
 #CFLAGS	 += -DNDEBUG
 
-all: depend $(EXECS) doc/index.html
+all: $(EXECS) doc/index.html
 
 OBJS = $(SOURCES:.ml=.cmx)
 DBG_OBJS = $(SOURCES:.ml=.cmo)
@@ -84,10 +84,10 @@ clean:
 realclean: clean
 	rm -f *~ *.old *.bak
 
-.depend: depend
 
-depend: $(SOURCES)
-	$(OCAMLDEP) *.mli *.ml > .depend
-#	$(CC) $(CFLAGS) -MM *.c >> .depend
+-include .depend
 
-include .depend
+.depend: $(SOURCES) $(MLIS)
+	$(OCAMLDEP) $^ > $@
+
+$(OBJS) $(DBG_OBJS): .depend
